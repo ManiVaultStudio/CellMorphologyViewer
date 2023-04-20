@@ -1,0 +1,20 @@
+#pragma once
+
+#include "graphics/Vector3f.h"
+
+#include <vector>
+#include <unordered_map>
+
+class Neuron
+{
+public:
+    std::vector<int> ids;
+    std::unordered_map<int, int> idMap;
+    std::vector<hdps::Vector3f> positions;
+    std::vector<int> types;
+    std::vector<float> radii;
+    std::vector<int> parents;
+
+private:
+
+};

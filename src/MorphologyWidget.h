@@ -34,8 +34,6 @@ private:
     GLuint rbo;
     GLuint tbo;
 
-    std::unordered_map<int, int> _idMap;
-    std::vector<hdps::Vector3f> _positions;
     std::vector<hdps::Vector3f> _segments;
     std::vector<float> _segmentRadii;
     std::vector<int> _segmentTypes;
