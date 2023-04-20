@@ -8,6 +8,9 @@
 class Neuron
 {
 public:
+    void center();
+    void rescale();
+
     std::vector<int> ids;
     std::unordered_map<int, int> idMap;
     std::vector<hdps::Vector3f> positions;

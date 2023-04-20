@@ -36,64 +36,22 @@ void MorphologyWidget::initializeGL()
         qCritical() << "Failed to load one of the morphology shaders";
     }
 
-    // Load swc data
-    //Bstd::string filename = "Tlx3-Cre_PL56_Ai14-318845.02.02.01_652303152_m.swc";
-    //std::string filename = "E:/Work/DelftDrive/Software/Plugins/CellMorphologyViewer/res/714755043_transformed.swc";
-    //std::ifstream file(filename);
-
-    //if (!file.is_open()) {
-    //    std::cout << "Error opening file." << std::endl;
-    //    return;
-    //}
-
     std::string fileResult;
     loadCell(fileResult);
     Neuron neuron;
     readCell(fileResult, neuron);
 
-    // Find centroid and extents
-    Vector3f avgPos;
-    for (const auto& pos : neuron.positions)
-        avgPos += pos;
-    avgPos /= neuron.positions.size();
-
-    // Center cell positions
-    for (auto& pos : neuron.positions)
-        pos -= avgPos;
-
-    // Find cell position ranges
-    Vector3f minV(std::numeric_limits<float>::max());
-    Vector3f maxV(-std::numeric_limits<float>::max());
-    for (const auto& pos : neuron.positions)
-    {
-        if (pos.x < minV.x) minV.x = pos.x;
-        if (pos.y < minV.y) minV.y = pos.y;
-        if (pos.z < minV.z) minV.z = pos.z;
-        if (pos.x > maxV.x) maxV.x = pos.x;
-        if (pos.y > maxV.y) maxV.y = pos.y;
-        if (pos.z > maxV.z) maxV.z = pos.z;
-    }
-    Vector3f range = (maxV - minV);
-    float maxRange = std::max(std::max(range.x, range.y), range.z);
-    // Rescale positions
-    for (auto& pos : neuron.positions)
-    {
-        pos /= maxRange;
-    }
+    neuron.center();
+    neuron.rescale();
 
     // Set projection matrix
     //_projMatrix.ortho(-1, 1, -1, 1, -1, 1);
     _viewMatrix.translate(0, 0, 0);
 
-    std::cout << minV.str() << " " << maxV.str() << std::endl;
     for (int i = 0; i < 16; i++)
     {
         qDebug() << _projMatrix.constData()[i];
     }
-    //for (auto& pos : _positions)
-    //{
-    //    std::cout << pos.str() << std::endl;
-    //}
 
     // Generate line segments
     for (int i = 1; i < neuron.parents.size(); i++)
