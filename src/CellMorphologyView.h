@@ -2,12 +2,15 @@
 
 #include "MorphologyWidget.h"
 
+#include "NeuronDescriptor.h"
+
 #include <ViewPlugin.h>
 
 #include <Dataset.h>
 #include <widgets/DropWidget.h>
+#include <actions/StringAction.h>
 
-#include <PointData.h>
+#include <PointData/PointData.h>
 
 #include <QWidget>
 
@@ -50,6 +53,9 @@ public:
      * @param dataEvent Data event which occurred
      */
     void onDataEvent(hdps::DataEvent* dataEvent);
+    void onNeuronChanged();
+
+    void dataInputChanged(const QString& dataInput);
 
 protected:
     DropWidget*             _dropWidget;                /** Widget for drag and drop behavior */
@@ -58,6 +64,13 @@ protected:
     QLabel*                 _currentDatasetNameLabel;   /** Label that show the current dataset name */
 
     MorphologyWidget*       _morphologyWidget;
+    StringAction            _inputAction;
+    //StringAction            _tTypeClassAction;
+    //StringAction            _tTypeAction;
+
+    NeuronDescriptor        _currentNeuron;
+
+    std::vector<NeuronDescriptor> _neuronList;
 };
 
 /**

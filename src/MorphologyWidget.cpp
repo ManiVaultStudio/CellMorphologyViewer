@@ -1,9 +1,13 @@
 #include "MorphologyWidget.h"
 
 #include "CellMorphologyView.h"
-#include "CellLoader.h"
 
 #include "Neuron.h"
+#include "ImageQuery.h"
+
+#include <QPainter>
+#include <QNetworkAccessManager>
+#include <QSslSocket>
 
 #include <fstream>
 #include <iostream>
@@ -17,6 +21,17 @@ MorphologyWidget::MorphologyWidget(CellMorphologyView* plugin)
     setFocusPolicy(Qt::ClickFocus);
 
     installEventFilter(this);
+
+    QSurfaceFormat surfaceFormat;
+
+    surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
+
+    // Ask for an OpenGL 4.3 Core Context as the default
+    surfaceFormat.setVersion(4, 3);
+    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+
+    setFormat(surfaceFormat);
 }
 
 MorphologyWidget::~MorphologyWidget()
@@ -24,34 +39,14 @@ MorphologyWidget::~MorphologyWidget()
 
 }
 
-void MorphologyWidget::initializeGL()
+void MorphologyWidget::setNeuron(Neuron& neuron)
 {
-    initializeOpenGLFunctions();
+    if (!isInitialized)
+        return;
 
-    // Load shaders
-    bool loaded = true;
-    loaded &= _lineShader.loadShaderFromFile(":shaders/PassThrough.vert", ":shaders/Lines.frag");
-
-    if (!loaded) {
-        qCritical() << "Failed to load one of the morphology shaders";
-    }
-
-    std::string fileResult;
-    loadCell(fileResult);
-    Neuron neuron;
-    readCell(fileResult, neuron);
-
-    neuron.center();
-    neuron.rescale();
-
-    // Set projection matrix
-    //_projMatrix.ortho(-1, 1, -1, 1, -1, 1);
-    _viewMatrix.translate(0, 0, 0);
-
-    for (int i = 0; i < 16; i++)
-    {
-        qDebug() << _projMatrix.constData()[i];
-    }
+    _segments.clear();
+    _segmentRadii.clear();
+    _segmentTypes.clear();
 
     // Generate line segments
     for (int i = 1; i < neuron.parents.size(); i++)
@@ -69,24 +64,55 @@ void MorphologyWidget::initializeGL()
     }
 
     // Store data on GPU
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, _segments.size() * sizeof(Vector3f), _segments.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, rbo);
+    glBufferData(GL_ARRAY_BUFFER, _segmentRadii.size() * sizeof(float), _segmentRadii.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, tbo);
+    glBufferData(GL_ARRAY_BUFFER, _segmentTypes.size() * sizeof(int), _segmentTypes.data(), GL_STATIC_DRAW);
+}
+
+void MorphologyWidget::initializeGL()
+{
+    initializeOpenGLFunctions();
+
+    // Load shaders
+    bool loaded = true;
+    loaded &= _lineShader.loadShaderFromFile(":shaders/PassThrough.vert", ":shaders/Lines.frag");
+
+    if (!loaded) {
+        qCritical() << "Failed to load one of the morphology shaders";
+    }
+
+    // Set projection matrix
+    //_projMatrix.ortho(-1, 1, -1, 1, -1, 1);
+    _viewMatrix.translate(0, 0, 0);
+
+    for (int i = 0; i < 16; i++)
+    {
+        qDebug() << _projMatrix.constData()[i];
+    }
+
+    // Initialize VAO and VBOs
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, _segments.size() * sizeof(Vector3f), _segments.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
     glGenBuffers(1, &rbo);
-    glBindBuffer(GL_ARRAY_BUFFER, rbo);
-    glBufferData(GL_ARRAY_BUFFER, _segmentRadii.size() * sizeof(float), _segmentRadii.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, rbo);;
     glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(1);
 
     glGenBuffers(1, &tbo);
     glBindBuffer(GL_ARRAY_BUFFER, tbo);
-    glBufferData(GL_ARRAY_BUFFER, _segmentTypes.size() * sizeof(int), _segmentTypes.data(), GL_STATIC_DRAW);
     glVertexAttribIPointer(2, 1, GL_INT, 0, 0);
     glEnableVertexAttribArray(2);
 
@@ -94,22 +120,28 @@ void MorphologyWidget::initializeGL()
     QTimer* updateTimer = new QTimer();
     QObject::connect(updateTimer, &QTimer::timeout, this, [this]() { update(); });
     updateTimer->start(50);
+
+    isInitialized = true;
 }
 
 void MorphologyWidget::resizeGL(int w, int h)
 {
     glViewport(0, 0, w, h);
 
-    //float aspect = w / h;
-    //_projMatrix.setToIdentity();
-    //_projMatrix.ortho(-aspect, aspect, -1, 1, -1, 1);
+    float aspect = w / h;
+    _projMatrix.setToIdentity();
+    _projMatrix.ortho(-aspect * 0.8f, aspect * 0.8f, -0.8f, 0.8f, -0.8f, 0.8f);
 }
 float t = 0;
 void MorphologyWidget::paintGL()
 {
+    QPainter painter(this);
+
+    painter.beginNativePainting();
+    
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
-    qDebug() << t;
+    //qDebug() << t;
     t += 1.6f;
     _viewMatrix.setToIdentity();
     _viewMatrix.rotate(t, 0, 1, 0);
@@ -120,11 +152,65 @@ void MorphologyWidget::paintGL()
 
     glBindVertexArray(vao);
     glDrawArrays(GL_LINES, 0, _segments.size());
+
+    _lineShader.release();
+    glBindVertexArray(0);
+
+    painter.endNativePainting();
+
+    QFont font = painter.font();
+    font.setPointSize(24);
+    painter.setFont(font);
+    painter.setPen(QPen(Qt::white));
+    painter.drawText(14, 40, "T-Type Class: " + _nd.tTypeClass);
+    
+    font.setPointSize(16);
+    painter.setFont(font);
+    painter.drawText(14, 70, "T-Type Subclass: " + _nd.tTypeSubClass);
+
+    font.setPointSize(14);
+    painter.setFont(font);
+    painter.drawText(14, 100, "T-Type: " + _nd.tType);
+
+    font.setPointSize(14);
+    painter.setFont(font);
+    painter.drawText(14, 130, "Cortical Layer: " + _nd.corticalLayer);
+
+    painter.drawPixmap(0, 160, 400, 300, _morphologyImage);
+
+    painter.drawPixmap(0, 400, 300, 300, _evImage);
+
+    painter.end();
 }
 
 void MorphologyWidget::cleanup()
 {
 
+}
+
+void MorphologyWidget::updateNeuron(NeuronDescriptor nd)
+{
+    _nd = nd;
+
+    qDebug() << QSslSocket::supportsSsl() << QSslSocket::sslLibraryBuildVersionString() << QSslSocket::sslLibraryVersionString();
+
+    QByteArray ba = loadImage(_nd.morphologyUrl);
+
+    _morphologyImage.loadFromData(ba);
+
+    ba = loadImage(_nd.evUrl);
+    _evImage.loadFromData(ba);
+
+    //QNetworkAccessManager* nam = new QNetworkAccessManager(this);
+    //connect(nam, &QNetworkAccessManager::finished, this, &MorphologyWidget::downloadFinished);
+    //const QUrl url = QUrl(_nd.morphologyUrl);
+    //QNetworkRequest request(url);
+    //nam->get(request);
+}
+
+void MorphologyWidget::downloadFinished(QNetworkReply* reply)
+{
+    _morphologyImage.loadFromData(reply->readAll());
 }
 
 bool MorphologyWidget::eventFilter(QObject* target, QEvent* event)
@@ -144,6 +230,7 @@ bool MorphologyWidget::eventFilter(QObject* target, QEvent* event)
     {
         auto mouseEvent = static_cast<QMouseEvent*>(event);
 
+        emit changeNeuron();
         qDebug() << "Mouse button press";
 
         break;

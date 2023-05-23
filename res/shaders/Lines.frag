@@ -7,11 +7,11 @@ out vec4 fragColor;
 
 void main()
 {
-	float r = 1;
-	float b = 0;
-	if (pass_type == 3) {
-		r = 0;
-		b = 0.5;
-	}
+    float r = 1;
+    float b = 0;
+    if (pass_type == 3) {
+        r = 0;
+        b = 0.5;
+    }
     fragColor = vec4(r, pass_radius, b, 1);
 }

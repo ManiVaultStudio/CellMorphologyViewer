@@ -17,7 +17,8 @@ endif(MSVC)
 
 file(TO_CMAKE_PATH $ENV{HDPS_INSTALL_DIR} INSTALL_DIR)
 
-find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGLWidgets REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGLWidgets Network REQUIRED)
 
 set(SOURCES
     src/CellMorphologyView.h
@@ -28,6 +29,10 @@ set(SOURCES
     src/CellLoader.cpp
     src/Neuron.h
     src/Neuron.cpp
+    src/NeuronDescriptor.h
+    src/Query.h
+    src/Query.cpp
+    src/ImageQuery.h
     src/CellMorphologyView.json
 )
 
@@ -54,6 +59,9 @@ endif(MSVC)
 target_link_libraries(${PROJECT} PRIVATE Qt6::Widgets)
 target_link_libraries(${PROJECT} PRIVATE Qt6::WebEngineWidgets)
 target_link_libraries(${PROJECT} PRIVATE Qt6::OpenGLWidgets)
+target_link_libraries(${PROJECT} PRIVATE Qt6::Network)
+target_link_libraries(${PROJECT} PRIVATE OpenSSL::SSL)
+target_link_libraries(${PROJECT} PRIVATE OpenSSL::Crypto)
 target_link_libraries(${PROJECT} PRIVATE "${INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}HDPS_Public${LIB_LINK_SUFFIX}")
 target_link_libraries(${PROJECT} PRIVATE "${INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}PointData${LIB_LINK_SUFFIX}")
 target_link_libraries(${PROJECT} PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/curl/lib/libcurl_imp.lib")

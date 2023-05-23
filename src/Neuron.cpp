@@ -40,5 +40,5 @@ void Neuron::rescale()
     {
         pos /= maxRange;
     }
-    std::cout << minV.str() << " " << maxV.str() << std::endl;
+    //std::cout << minV.str() << " " << maxV.str() << std::endl;
 }

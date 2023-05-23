@@ -27,7 +27,7 @@ size_t CurlWrite_CallbackFunc_StdString(void* contents, size_t size, size_t nmem
     return newLength;
 }
 
-void loadCell(std::string& result)
+void loadCell(std::string dataInput, std::string& result)
 {
     //curl_global_init(CURL_GLOBAL_SSL);
 
@@ -38,8 +38,10 @@ void loadCell(std::string& result)
 
     curl = curl_easy_init();
 
+    std::string url = "https://download.brainimagelibrary.org/biccn/zeng/pseq/morph/200526/" + dataInput + "_transformed.swc";
+
     if (curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, "https://download.brainimagelibrary.org/biccn/zeng/pseq/morph/200526/714755043_transformed.swc");
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         /* example.com is redirected, so we tell libcurl to follow redirection */
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -57,7 +59,7 @@ void loadCell(std::string& result)
         curl_easy_cleanup(curl);
     }
 
-    std::cout << "Beep" << result.c_str() << std::endl;
+    //std::cout << "Beep" << result.c_str() << std::endl;
 }
 
 void readCell(const std::string& fileResult, Neuron& neuron)

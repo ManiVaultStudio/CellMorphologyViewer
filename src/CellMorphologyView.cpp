@@ -2,6 +2,10 @@
 
 #include <event/Event.h>
 
+#include "CellLoader.h"
+#include "Neuron.h"
+#include "Query.h"
+
 #include <QDebug>
 #include <QMimeData>
 
@@ -15,13 +19,19 @@ CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     _points(),
     _currentDatasetName(),
     _currentDatasetNameLabel(new QLabel()),
-    _morphologyWidget(new MorphologyWidget(this))
+    _morphologyWidget(new MorphologyWidget(this)),
+    _inputAction(this, "Dataset ID", "", "")
+    //_tTypeClassAction(this, "T-Type Class", "", ""),
+    //_tTypeAction(this, "T-Type", "", "")
 {
     // This line is mandatory if drag and drop behavior is required
     _currentDatasetNameLabel->setAcceptDrops(true);
 
     // Align text in the center
     _currentDatasetNameLabel->setAlignment(Qt::AlignCenter);
+
+    //connect(&_inputAction, &StringAction::stringChanged, this, &CellMorphologyView::dataInputChanged);
+    connect(_morphologyWidget, &MorphologyWidget::changeNeuron, this, &CellMorphologyView::onNeuronChanged);
 }
 
 void CellMorphologyView::init()
@@ -32,7 +42,10 @@ void CellMorphologyView::init()
     layout->setContentsMargins(0, 0, 0, 0);
 
     //layout->addWidget(_currentDatasetNameLabel);
-    layout->addWidget(_morphologyWidget);
+    //layout->addWidget(_tTypeClassAction.createWidget(&getWidget()), 1);
+    //layout->addWidget(_tTypeAction.createWidget(&getWidget()), 1);
+    layout->addWidget(_morphologyWidget, 99);
+    layout->addWidget(_inputAction.createWidget(&getWidget()), 1);
 
     // Apply the layout
     getWidget().setLayout(layout);
@@ -113,6 +126,9 @@ void CellMorphologyView::init()
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataRemoved));
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataSelectionChanged));
     _eventListener.registerDataEventByType(PointType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
+
+    Query query;
+    _neuronList = query.send();
 }
 
 void CellMorphologyView::onDataEvent(hdps::DataEvent* dataEvent)
@@ -180,6 +196,27 @@ void CellMorphologyView::onDataEvent(hdps::DataEvent* dataEvent)
         default:
             break;
     }
+}
+int bee = 0;
+void CellMorphologyView::dataInputChanged(const QString& dataInput)
+{
+
+}
+
+void CellMorphologyView::onNeuronChanged()
+{
+    std::string fileResult;
+    loadCell(_neuronList[bee++].symbol.toStdString(), fileResult);
+
+    _morphologyWidget->updateNeuron(_neuronList[bee]);
+
+    Neuron neuron;
+    readCell(fileResult, neuron);
+
+    neuron.center();
+    neuron.rescale();
+
+    _morphologyWidget->setNeuron(neuron);
 }
 
 ViewPlugin* CellMorphologyPluginFactory::produce()
