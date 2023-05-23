@@ -60,4 +60,5 @@ private:
 
     QPixmap _morphologyImage;
     QPixmap _evImage;
+    QPixmap _wheelImage;
 };

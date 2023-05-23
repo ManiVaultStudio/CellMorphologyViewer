@@ -14,4 +14,5 @@ public:
 
     QString morphologyUrl;
     QString evUrl;
+    QString wheelUrl;
 };

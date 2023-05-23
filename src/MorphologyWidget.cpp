@@ -130,7 +130,7 @@ void MorphologyWidget::resizeGL(int w, int h)
 
     float aspect = w / h;
     _projMatrix.setToIdentity();
-    _projMatrix.ortho(-aspect * 0.8f, aspect * 0.8f, -0.8f, 0.8f, -0.8f, 0.8f);
+    _projMatrix.ortho(-aspect, aspect, -1, 1, -1, 1);
 }
 float t = 0;
 void MorphologyWidget::paintGL()
@@ -162,23 +162,25 @@ void MorphologyWidget::paintGL()
     font.setPointSize(24);
     painter.setFont(font);
     painter.setPen(QPen(Qt::white));
-    painter.drawText(14, 40, "T-Type Class: " + _nd.tTypeClass);
+    painter.drawText(250, 60, "T-Type Class: " + _nd.tTypeClass);
     
     font.setPointSize(16);
     painter.setFont(font);
-    painter.drawText(14, 70, "T-Type Subclass: " + _nd.tTypeSubClass);
+    painter.drawText(250, 100, "T-Type Subclass: " + _nd.tTypeSubClass);
 
     font.setPointSize(14);
     painter.setFont(font);
-    painter.drawText(14, 100, "T-Type: " + _nd.tType);
+    painter.drawText(250, 140, "T-Type: " + _nd.tType);
 
     font.setPointSize(14);
     painter.setFont(font);
-    painter.drawText(14, 130, "Cortical Layer: " + _nd.corticalLayer);
+    painter.drawText(250, 180, "Cortical Layer: " + _nd.corticalLayer);
 
-    painter.drawPixmap(0, 160, 400, 300, _morphologyImage);
+    painter.drawPixmap(-30, -30, 300, 300, _wheelImage);
 
-    painter.drawPixmap(0, 400, 300, 300, _evImage);
+    painter.drawPixmap(0, 250, 400, 300, _morphologyImage);
+
+    painter.drawPixmap(0, 500, 300, 300, _evImage);
 
     painter.end();
 }
@@ -200,6 +202,9 @@ void MorphologyWidget::updateNeuron(NeuronDescriptor nd)
 
     ba = loadImage(_nd.evUrl);
     _evImage.loadFromData(ba);
+
+    ba = loadImage(_nd.wheelUrl);
+    _wheelImage.loadFromData(ba);
 
     //QNetworkAccessManager* nam = new QNetworkAccessManager(this);
     //connect(nam, &QNetworkAccessManager::finished, this, &MorphologyWidget::downloadFinished);

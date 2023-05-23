@@ -206,7 +206,7 @@ void CellMorphologyView::dataInputChanged(const QString& dataInput)
 void CellMorphologyView::onNeuronChanged()
 {
     std::string fileResult;
-    loadCell(_neuronList[bee++].symbol.toStdString(), fileResult);
+    loadCell(_neuronList[bee].symbol.toStdString(), fileResult);
 
     _morphologyWidget->updateNeuron(_neuronList[bee]);
 
@@ -217,6 +217,8 @@ void CellMorphologyView::onNeuronChanged()
     neuron.rescale();
 
     _morphologyWidget->setNeuron(neuron);
+
+    bee++;
 }
 
 ViewPlugin* CellMorphologyPluginFactory::produce()
