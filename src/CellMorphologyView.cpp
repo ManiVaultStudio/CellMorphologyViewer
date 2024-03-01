@@ -11,7 +11,7 @@
 
 Q_PLUGIN_METADATA(IID "studio.manivault.CellMorphologyView")
 
-using namespace hdps;
+using namespace mv;
 
 CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     ViewPlugin(factory),
@@ -20,7 +20,7 @@ CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     _currentDatasetName(),
     _currentDatasetNameLabel(new QLabel()),
     _morphologyWidget(new MorphologyWidget(this)),
-    _inputAction(this, "Dataset ID", "", "")
+    _inputAction(this, "Dataset ID", "")
     //_tTypeClassAction(this, "T-Type Class", "", ""),
     //_tTypeAction(this, "T-Type", "", "")
 {
@@ -81,7 +81,7 @@ void CellMorphologyView::init()
         else {
 
             // Get points dataset from the core
-            auto candidateDataset = _core->requestDataset<Points>(datasetId);
+            auto candidateDataset = mv::data().getDataset<Points>(datasetId);
 
             // Accept points datasets drag and drop
             if (dataType == PointType) {
@@ -111,27 +111,27 @@ void CellMorphologyView::init()
     });
 
     // Respond when the name of the dataset in the dataset reference changes
-    connect(&_points, &Dataset<Points>::dataGuiNameChanged, this, [this](const QString& oldDatasetName, const QString& newDatasetName) {
-
+    connect(&_points, &Dataset<Points>::guiNameChanged, this, [this]()
+    {
         // Update the current dataset name label
-        _currentDatasetNameLabel->setText(QString("Current points dataset: %1").arg(newDatasetName));
+        _currentDatasetNameLabel->setText(QString("Current points dataset: %1").arg(_points->getGuiName()));
 
         // Only show the drop indicator when nothing is loaded in the dataset reference
-        _dropWidget->setShowDropIndicator(newDatasetName.isEmpty());
+        _dropWidget->setShowDropIndicator(_points->getGuiName().isEmpty());
     });
 
     // Alternatively, classes which derive from hdsp::EventListener (all plugins do) can also respond to events
-    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataAdded));
-    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataChanged));
-    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataRemoved));
-    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataSelectionChanged));
+    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetAdded));
+    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetDataChanged));
+    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetRemoved));
+    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetDataSelectionChanged));
     _eventListener.registerDataEventByType(PointType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
 
     Query query;
     _neuronList = query.send();
 }
 
-void CellMorphologyView::onDataEvent(hdps::DataEvent* dataEvent)
+void CellMorphologyView::onDataEvent(mv::DatasetEvent* dataEvent)
 {
     // Get smart pointer to dataset that changed
     const auto changedDataSet = dataEvent->getDataset();
@@ -143,10 +143,10 @@ void CellMorphologyView::onDataEvent(hdps::DataEvent* dataEvent)
     switch (dataEvent->getType()) {
 
         // A points dataset was added
-        case EventType::DataAdded:
+        case EventType::DatasetAdded:
         {
             // Cast the data event to a data added event
-            const auto dataAddedEvent = static_cast<DataAddedEvent*>(dataEvent);
+            const auto dataAddedEvent = static_cast<DatasetAddedEvent*>(dataEvent);
 
             // Get the GUI name of the added points dataset and print to the console
             qDebug() << datasetGuiName << "was added";
@@ -155,10 +155,10 @@ void CellMorphologyView::onDataEvent(hdps::DataEvent* dataEvent)
         }
 
         // Points dataset data has changed
-        case EventType::DataChanged:
+        case EventType::DatasetDataChanged:
         {
             // Cast the data event to a data changed event
-            const auto dataChangedEvent = static_cast<DataChangedEvent*>(dataEvent);
+            const auto dataChangedEvent = static_cast<DatasetDataChangedEvent*>(dataEvent);
 
             // Get the name of the points dataset of which the data changed and print to the console
             qDebug() << datasetGuiName << "data changed";
@@ -167,10 +167,10 @@ void CellMorphologyView::onDataEvent(hdps::DataEvent* dataEvent)
         }
 
         // Points dataset data was removed
-        case EventType::DataRemoved:
+        case EventType::DatasetRemoved:
         {
             // Cast the data event to a data removed event
-            const auto dataRemovedEvent = static_cast<DataRemovedEvent*>(dataEvent);
+            const auto dataRemovedEvent = static_cast<DatasetRemovedEvent*>(dataEvent);
 
             // Get the name of the removed points dataset and print to the console
             qDebug() << datasetGuiName << "was removed";
@@ -179,10 +179,10 @@ void CellMorphologyView::onDataEvent(hdps::DataEvent* dataEvent)
         }
 
         // Points dataset selection has changed
-        case EventType::DataSelectionChanged:
+        case EventType::DatasetDataSelectionChanged:
         {
             // Cast the data event to a data selection changed event
-            const auto dataSelectionChangedEvent = static_cast<DataSelectionChangedEvent*>(dataEvent);
+            const auto dataSelectionChangedEvent = static_cast<DatasetDataSelectionChangedEvent*>(dataEvent);
 
             // Get the selection set that changed
             const auto& selectionSet = changedDataSet->getSelection<Points>();
@@ -226,7 +226,7 @@ ViewPlugin* CellMorphologyPluginFactory::produce()
     return new CellMorphologyView(this);
 }
 
-hdps::DataTypes CellMorphologyPluginFactory::supportedDataTypes() const
+mv::DataTypes CellMorphologyPluginFactory::supportedDataTypes() const
 {
     DataTypes supportedTypes;
 
@@ -236,7 +236,7 @@ hdps::DataTypes CellMorphologyPluginFactory::supportedDataTypes() const
     return supportedTypes;
 }
 
-hdps::gui::PluginTriggerActions CellMorphologyPluginFactory::getPluginTriggerActions(const hdps::Datasets& datasets) const
+mv::gui::PluginTriggerActions CellMorphologyPluginFactory::getPluginTriggerActions(const mv::Datasets& datasets) const
 {
     PluginTriggerActions pluginTriggerActions;
 

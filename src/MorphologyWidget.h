@@ -44,13 +44,13 @@ signals:
 private:
     bool isInitialized = false;
 
-    hdps::ShaderProgram _lineShader;
+    mv::ShaderProgram _lineShader;
     GLuint vao = 0;
     GLuint vbo = 0;
     GLuint rbo = 0;
     GLuint tbo = 0;
 
-    std::vector<hdps::Vector3f> _segments;
+    std::vector<mv::Vector3f> _segments;
     std::vector<float> _segmentRadii;
     std::vector<int> _segmentTypes;
     QMatrix4x4 _projMatrix;

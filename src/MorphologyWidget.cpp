@@ -8,12 +8,14 @@
 #include <QPainter>
 #include <QNetworkAccessManager>
 #include <QSslSocket>
+#include <QEvent>
+#include <QResizeEvent>
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
 
-using namespace hdps;
+using namespace mv;
 
 MorphologyWidget::MorphologyWidget(CellMorphologyView* plugin)
 {

@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-using namespace hdps;
+using namespace mv;
 
 void Neuron::center()
 {

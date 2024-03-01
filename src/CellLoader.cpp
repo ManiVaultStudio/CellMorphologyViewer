@@ -118,7 +118,7 @@ void readCell(const std::string& fileResult, Neuron& neuron)
     //}
 
     // Find centroid and extents
-    hdps::Vector3f avgPos;
+    mv::Vector3f avgPos;
     for (const auto& pos : neuron.positions)
         avgPos += pos;
     avgPos /= neuron.positions.size();
@@ -128,8 +128,8 @@ void readCell(const std::string& fileResult, Neuron& neuron)
         pos -= avgPos;
 
     // Find cell position ranges
-    hdps::Vector3f minV(std::numeric_limits<float>::max());
-    hdps::Vector3f maxV(-std::numeric_limits<float>::max());
+    mv::Vector3f minV(std::numeric_limits<float>::max());
+    mv::Vector3f maxV(-std::numeric_limits<float>::max());
     for (const auto& pos : neuron.positions)
     {
         if (pos.x < minV.x) minV.x = pos.x;
@@ -139,7 +139,7 @@ void readCell(const std::string& fileResult, Neuron& neuron)
         if (pos.y > maxV.y) maxV.y = pos.y;
         if (pos.z > maxV.z) maxV.z = pos.z;
     }
-    hdps::Vector3f range = (maxV - minV);
+    mv::Vector3f range = (maxV - minV);
     float maxRange = std::max(std::max(range.x, range.y), range.z);
     // Rescale positions
     for (auto& pos : neuron.positions)

@@ -13,7 +13,7 @@ public:
 
     std::vector<int> ids;
     std::unordered_map<int, int> idMap;
-    std::vector<hdps::Vector3f> positions;
+    std::vector<mv::Vector3f> positions;
     std::vector<int> types;
     std::vector<float> radii;
     std::vector<int> parents;
