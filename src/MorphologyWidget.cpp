@@ -164,19 +164,19 @@ void MorphologyWidget::paintGL()
     font.setPointSize(24);
     painter.setFont(font);
     painter.setPen(QPen(Qt::white));
-    painter.drawText(250, 60, "T-Type Class: " + _nd.tTypeClass);
+    painter.drawText(25, 60, "T-Type Class: " + _nd.tTypeClass);
     
     font.setPointSize(16);
     painter.setFont(font);
-    painter.drawText(250, 100, "T-Type Subclass: " + _nd.tTypeSubClass);
+    painter.drawText(25, 100, "T-Type Subclass: " + _nd.tTypeSubClass);
 
     font.setPointSize(14);
     painter.setFont(font);
-    painter.drawText(250, 140, "T-Type: " + _nd.tType);
+    painter.drawText(25, 140, "T-Type: " + _nd.tType);
 
     font.setPointSize(14);
     painter.setFont(font);
-    painter.drawText(250, 180, "Cortical Layer: " + _nd.corticalLayer);
+    painter.drawText(25, 180, "Cortical Layer: " + _nd.corticalLayer);
 
     painter.drawPixmap(-30, -30, 300, 300, _wheelImage);
 
@@ -237,7 +237,11 @@ bool MorphologyWidget::eventFilter(QObject* target, QEvent* event)
     {
         auto mouseEvent = static_cast<QMouseEvent*>(event);
 
-        emit changeNeuron();
+        QString neuronId = "592479953";
+        if (mouseEvent->x() > 500)
+            neuronId = "595572609";
+        
+        emit changeNeuron(neuronId);
         qDebug() << "Mouse button press";
 
         break;

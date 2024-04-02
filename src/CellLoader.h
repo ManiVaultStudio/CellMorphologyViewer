@@ -1,9 +1,12 @@
 #pragma once
 
+#include <QString>
+
 #include <string>
 
 class Neuron;
 
-void loadCell(std::string dataInput, std::string& result);
+void loadCellContentsFromWeb(std::string cellId, std::string& result);
+void loadCellContentsFromFile(QString filePath, std::string& result);
 
-void readCell(const std::string& fileResult, Neuron& neuron);
+void readCell(const std::string& contents, Neuron& neuron);

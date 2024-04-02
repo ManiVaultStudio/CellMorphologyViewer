@@ -53,15 +53,21 @@ public:
      * @param dataEvent Data event which occurred
      */
     void onDataEvent(mv::DatasetEvent* dataEvent);
-    void onNeuronChanged();
+    void onNeuronChanged(QString neuronId);
 
     void dataInputChanged(const QString& dataInput);
 
-protected:
-    DropWidget*             _dropWidget;                /** Widget for drag and drop behavior */
-    mv::Dataset<Points>     _points;                    /** Points smart pointer */
-    QString                 _currentDatasetName;        /** Name of the current dataset */
-    QLabel*                 _currentDatasetNameLabel;   /** Label that show the current dataset name */
+private:
+    /** Invoked when the position points dataset changes */
+    void onPointsDatasetChanged();
+
+    void onCellSelectionChanged();
+
+private:
+    DropWidget*                     _dropWidget;                /** Widget for drag and drop behavior */
+    mv::Dataset<Points>             _points;                    /** Points smart pointer */
+    QString                         _currentDatasetName;        /** Name of the current dataset */
+    QLabel*                         _currentDatasetNameLabel;   /** Label that show the current dataset name */
 
     MorphologyWidget*         _morphologyWidget;
     StringAction              _inputAction;

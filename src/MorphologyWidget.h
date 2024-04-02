@@ -39,7 +39,7 @@ protected:
     void downloadFinished(QNetworkReply* reply);
 
 signals:
-    void changeNeuron();
+    void changeNeuron(QString neuronId);
 
 private:
     bool isInitialized = false;

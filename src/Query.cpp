@@ -14,50 +14,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-const char* query_prefix = R"RAW(curl 'https://idf-api-dev.aibs-idk-dev.net/' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://idf-api-dev.aibs-idk-dev.net' --data-binary '{"query":")RAW";
-const char* query_suffix = R"RAW("}' --compressed)RAW";
-
-const char* q = R"RAW(query {
-    aio_specimen(
-        filter: [
-{
-field: "projectReferenceIds"
-operator : CONTAINS
-value : "1HEYEW7GMUKWIQW37BO"
-}
-#      ,{
-#        field: "featureType"
-#        operator: CONTAINS
-#        value : "Dendrite"
-#      }
-, { field:"O267WEUPC2MMK3MI7ZY"
- operator : CONTAINS
- value : "Pvalb interneuron"
-}
-        ]
-    ) {
-    referenceId
-        specimenType{
-          name
-    }
-        cRID{
-          symbol
-    }
-        annotations(featureTypes: ["DW0F0S320VR4NX0DBPT", "O267WEUPC2MMK3MI7ZY"] ) {
-        #referenceId
-            featureType{
-              referenceId
-              title
-              description
-        }
-            modality{ name }
-            taxons{ description, symbol }
-    }
-}
-}
-)RAW";
-
-size_t CurlWrite_CallbackFunc_StdString2(void* contents, size_t size, size_t nmemb, std::string* s)
+size_t curlReplyCallback(void* contents, size_t size, size_t nmemb, std::string* s)
 {
     size_t newLength = size * nmemb;
     try
@@ -72,17 +29,10 @@ size_t CurlWrite_CallbackFunc_StdString2(void* contents, size_t size, size_t nme
     return newLength;
 }
 
-void Query::fromText(QString text)
-{
-
-    qDebug() << query_prefix << text << query_suffix;
-    content = query_prefix + text + query_suffix;
-}
-
 QString Query::loadQueryFromFile(std::string fileName)
 {
     // Open the input file
-    QString contents = hdps::util::loadFileContents(QString::fromStdString(fileName));
+    QString contents = mv::util::loadFileContents(QString::fromStdString(fileName));
     contents = contents.replace("\"", "\\\"");
     contents = contents.simplified();
     contents = QString("{\"query\":\"") + contents + "\"}";
@@ -124,7 +74,7 @@ std::vector<NeuronDescriptor> Query::send()
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip, deflate, br");
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, hs);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString2);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlReplyCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
         curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, 102400L);

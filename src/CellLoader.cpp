@@ -6,6 +6,7 @@
 
 #include "curl/curl.h"
 
+#include <fstream>
 #include <sstream>
 #include <iostream>
 
@@ -27,7 +28,7 @@ size_t CurlWrite_CallbackFunc_StdString(void* contents, size_t size, size_t nmem
     return newLength;
 }
 
-void loadCell(std::string dataInput, std::string& result)
+void loadCellContentsFromWeb(std::string cellId, std::string& result)
 {
     //curl_global_init(CURL_GLOBAL_SSL);
 
@@ -38,7 +39,7 @@ void loadCell(std::string dataInput, std::string& result)
 
     curl = curl_easy_init();
 
-    std::string url = "https://download.brainimagelibrary.org/biccn/zeng/pseq/morph/200526/" + dataInput + "_transformed.swc";
+    std::string url = "https://download.brainimagelibrary.org/biccn/zeng/pseq/morph/200526/" + cellId + "_transformed.swc";
 
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -62,9 +63,20 @@ void loadCell(std::string dataInput, std::string& result)
     //std::cout << "Beep" << result.c_str() << std::endl;
 }
 
-void readCell(const std::string& fileResult, Neuron& neuron)
+void loadCellContentsFromFile(QString filePath, std::string& result)
 {
-    std::istringstream fileStream(fileResult);
+    std::ifstream file(filePath.toStdString());
+    std::cout << file.is_open() << std::endl;
+    if (file) {
+        std::ostringstream ss;
+        ss << file.rdbuf(); // reading data
+        result = ss.str();
+    }
+}
+
+void readCell(const std::string& contents, Neuron& neuron)
+{
+    std::istringstream fileStream(contents);
     std::string line;
 
     // #n type x y z radius parent
@@ -146,4 +158,8 @@ void readCell(const std::string& fileResult, Neuron& neuron)
     {
         pos /= maxRange;
     }
+
+    std::cout << maxRange << std::endl;
+    std::cout << minV << std::endl;
+    std::cout << maxV << std::endl;
 }
