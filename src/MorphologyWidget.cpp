@@ -2,7 +2,7 @@
 
 #include "CellMorphologyView.h"
 
-#include "Neuron.h"
+#include "CellMorphologyData/CellMorphology.h"
 #include "ImageQuery.h"
 
 #include <QPainter>
@@ -41,7 +41,7 @@ MorphologyWidget::~MorphologyWidget()
 
 }
 
-void MorphologyWidget::setNeuron(Neuron& neuron)
+void MorphologyWidget::setCellMorphology(const CellMorphology& cellMorphology)
 {
     if (!isInitialized)
         return;
@@ -51,18 +51,18 @@ void MorphologyWidget::setNeuron(Neuron& neuron)
     _segmentTypes.clear();
 
     // Generate line segments
-    for (int i = 1; i < neuron.parents.size(); i++)
+    for (int i = 1; i < cellMorphology.parents.size(); i++)
     {
-        int id = neuron.idMap[neuron.ids[i]];
-        int parent = neuron.idMap[neuron.parents[i]];
-        if (neuron.parents[i] == -1)
+        int id = cellMorphology.idMap.at(cellMorphology.ids[i]);
+        int parent = cellMorphology.idMap.at(cellMorphology.parents[i]);
+        if (cellMorphology.parents[i] == -1)
             continue;
-        _segments.push_back(neuron.positions[parent]);
-        _segments.push_back(neuron.positions[id]);
-        _segmentRadii.push_back(neuron.radii[id]);
-        _segmentRadii.push_back(neuron.radii[id]);
-        _segmentTypes.push_back(neuron.types[id]);
-        _segmentTypes.push_back(neuron.types[id]);
+        _segments.push_back(cellMorphology.positions[parent]);
+        _segments.push_back(cellMorphology.positions[id]);
+        _segmentRadii.push_back(cellMorphology.radii[id]);
+        _segmentRadii.push_back(cellMorphology.radii[id]);
+        _segmentTypes.push_back(cellMorphology.types[id]);
+        _segmentTypes.push_back(cellMorphology.types[id]);
     }
 
     // Store data on GPU

@@ -16,7 +16,7 @@
 #include <unordered_map>
 
 class CellMorphologyView;
-class Neuron;
+class CellMorphology;
 
 class MorphologyWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
@@ -26,7 +26,7 @@ public:
     ~MorphologyWidget();
 
     void updateNeuron(NeuronDescriptor nd);
-    void setNeuron(Neuron& neuron);
+    void setCellMorphology(const CellMorphology& cellMorphology);
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;

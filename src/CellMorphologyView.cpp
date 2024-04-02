@@ -2,9 +2,9 @@
 
 #include <event/Event.h>
 
-#include "CellLoader.h"
-#include "Neuron.h"
 #include "Query.h"
+
+#include "CellMorphologyData/CellMorphology.h"
 
 #include <DatasetsMimeData.h>
 
@@ -55,7 +55,6 @@ void CellMorphologyView::init()
 
     // Initialize the drop regions
     _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
-
         // A drop widget can contain zero or more drop regions
         DropWidget::DropRegions dropRegions;
         const auto datasetsMimeData = dynamic_cast<const DatasetsMimeData*>(mimeData);
@@ -105,6 +104,29 @@ void CellMorphologyView::init()
                             int32_t b = _points->visitData<std::int32_t>([](auto vec) { return vec[0][0]; });
                             qDebug() << b;
                         });
+                    }
+                }
+            }
+            else if (dataType == CellMorphologyType)
+            {
+                const auto description = QString("Load %1 into cell morphology view").arg(datasetGuiName);
+
+                if (!_cellMorphologies.isValid()) {
+                    // Dataset can be dropped
+                    dropRegions << new DropWidget::DropRegion(this, "Points", description, "map-marker-alt", true, [this, candidateDataset]() {
+                        _cellMorphologies = candidateDataset;
+                        qDebug() << _cellMorphologies.isValid();
+                    });
+                }
+                else {
+                    if (_cellMorphologies == candidateDataset) {
+                        // Dataset cannot be dropped because it is already loaded
+                        dropRegions << new DropWidget::DropRegion(this, "Warning", "Data already loaded", "exclamation-circle", false);
+                    }
+                    else {
+                        // Dataset can be dropped
+                        dropRegions << new DropWidget::DropRegion(this, "Points", description, "map-marker-alt", true, [this, candidateDataset]() {
+                            _cellMorphologies = candidateDataset;
                         });
                     }
                 }
@@ -216,21 +238,31 @@ void CellMorphologyView::dataInputChanged(const QString& dataInput)
 
 }
 
-void CellMorphologyView::onNeuronChanged(QString neuronId)
+void CellMorphologyView::onNeuronChanged(QString cellId)
 {
-    std::string fileContents;
-    //loadCell(_neuronList[bee].symbol.toStdString(), fileContents);
-    loadCellContentsFromFile(QString("D:/Dropbox/Julian/Patchseq/ProvidedData/SWC_Upright/") + neuronId + ".swc", fileContents);
-    qDebug() << QString::fromStdString(fileContents);
-    //_morphologyWidget->updateNeuron(_neuronList[bee]);
+    if (!_cellMorphologies.isValid())
+    {
+        qWarning() << "No cell morphology dataset set.";
+        return;
+    }
 
-    Neuron neuron;
-    readCell(fileContents, neuron);
+    // Get index of cell identifier
+    const QStringList& cellIds = _cellMorphologies->getCellIdentifiers();
 
-    neuron.center();
-    neuron.rescale();
+    int cellIndex = cellIds.indexOf(cellId);
 
-    _morphologyWidget->setNeuron(neuron);
+    if (cellIndex == -1)
+    {
+        qWarning() << "Failed to find cell with ID: " << cellId << " in the morphology dataset.";
+        return;
+    }
+    qDebug() << "Found cell with ID: " << cellId;
+    // Get cell morphology at index
+    const std::vector<CellMorphology>& cellMorphologies = _cellMorphologies->getData();
+
+    const CellMorphology& cellMorphology = cellMorphologies[cellIndex];
+
+    _morphologyWidget->setCellMorphology(cellMorphology);
 }
 
 void CellMorphologyView::onPointsDatasetChanged()
