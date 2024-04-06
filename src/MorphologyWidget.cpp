@@ -51,18 +51,28 @@ void MorphologyWidget::setCellMorphology(const CellMorphology& cellMorphology)
     _segmentTypes.clear();
 
     // Generate line segments
-    for (int i = 1; i < cellMorphology.parents.size(); i++)
+    try
     {
-        int id = cellMorphology.idMap.at(cellMorphology.ids[i]);
-        int parent = cellMorphology.idMap.at(cellMorphology.parents[i]);
-        if (cellMorphology.parents[i] == -1)
-            continue;
-        _segments.push_back(cellMorphology.positions[parent]);
-        _segments.push_back(cellMorphology.positions[id]);
-        _segmentRadii.push_back(cellMorphology.radii[id]);
-        _segmentRadii.push_back(cellMorphology.radii[id]);
-        _segmentTypes.push_back(cellMorphology.types[id]);
-        _segmentTypes.push_back(cellMorphology.types[id]);
+        for (int i = 1; i < cellMorphology.parents.size(); i++)
+        {
+            if (cellMorphology.parents[i] == -1) // New root found, there is no line segment here so skip it
+                continue;
+
+            int id = cellMorphology.idMap.at(cellMorphology.ids[i]);
+            int parent = cellMorphology.idMap.at(cellMorphology.parents[i]);
+
+            _segments.push_back(cellMorphology.positions[parent]);
+            _segments.push_back(cellMorphology.positions[id]);
+            _segmentRadii.push_back(cellMorphology.radii[id]);
+            _segmentRadii.push_back(cellMorphology.radii[id]);
+            _segmentTypes.push_back(cellMorphology.types[id]);
+            _segmentTypes.push_back(cellMorphology.types[id]);
+        }
+    }
+    catch (std::out_of_range& oor)
+    {
+        qWarning() << "Out of range error in setCellMorphology(): " << oor.what();
+        return;
     }
 
     // Store data on GPU

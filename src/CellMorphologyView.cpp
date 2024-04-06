@@ -278,7 +278,7 @@ void CellMorphologyView::onCellSelectionChanged()
 
     auto selectionDataset = _points->getSelection();
 
-    std::vector<uint32_t> indices = selectionDataset->getSelectionIndices();
+    const std::vector<uint32_t>& indices = selectionDataset->getSelectionIndices();
 
     if (indices.empty())
         return;
