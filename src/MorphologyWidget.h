@@ -1,13 +1,12 @@
 #pragma once
 
+#include "MorphologyLineRenderer.h"
+
 #include "NeuronDescriptor.h"
 
 #include "graphics/Vector3f.h"
-#include "graphics/Shader.h"
 
 #include <QOpenGLWidget>
-#include <QOpenGLFunctions_3_3_Core>
-#include <QMatrix4x4>
 
 #include <QNetworkReply>
 #include <QPixmap>
@@ -44,21 +43,11 @@ signals:
 private:
     bool isInitialized = false;
 
-    mv::ShaderProgram _lineShader;
-    GLuint vao = 0;
-    GLuint vbo = 0;
-    GLuint rbo = 0;
-    GLuint tbo = 0;
-
-    std::vector<mv::Vector3f> _segments;
-    std::vector<float> _segmentRadii;
-    std::vector<int> _segmentTypes;
-    QMatrix4x4 _projMatrix;
-    QMatrix4x4 _viewMatrix;
-
     NeuronDescriptor _nd;
 
     QPixmap _morphologyImage;
     QPixmap _evImage;
     QPixmap _wheelImage;
+
+    MorphologyLineRenderer _renderer;
 };

@@ -46,87 +46,15 @@ void MorphologyWidget::setCellMorphology(const CellMorphology& cellMorphology)
     if (!isInitialized)
         return;
 
-    _segments.clear();
-    _segmentRadii.clear();
-    _segmentTypes.clear();
-
-    // Generate line segments
-    try
-    {
-        for (int i = 1; i < cellMorphology.parents.size(); i++)
-        {
-            if (cellMorphology.parents[i] == -1) // New root found, there is no line segment here so skip it
-                continue;
-
-            int id = cellMorphology.idMap.at(cellMorphology.ids[i]);
-            int parent = cellMorphology.idMap.at(cellMorphology.parents[i]);
-
-            _segments.push_back(cellMorphology.positions[parent]);
-            _segments.push_back(cellMorphology.positions[id]);
-            _segmentRadii.push_back(cellMorphology.radii[id]);
-            _segmentRadii.push_back(cellMorphology.radii[id]);
-            _segmentTypes.push_back(cellMorphology.types[id]);
-            _segmentTypes.push_back(cellMorphology.types[id]);
-        }
-    }
-    catch (std::out_of_range& oor)
-    {
-        qWarning() << "Out of range error in setCellMorphology(): " << oor.what();
-        return;
-    }
-
-    // Store data on GPU
-    glBindVertexArray(vao);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, _segments.size() * sizeof(Vector3f), _segments.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, rbo);
-    glBufferData(GL_ARRAY_BUFFER, _segmentRadii.size() * sizeof(float), _segmentRadii.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, tbo);
-    glBufferData(GL_ARRAY_BUFFER, _segmentTypes.size() * sizeof(int), _segmentTypes.data(), GL_STATIC_DRAW);
+    makeCurrent();
+    _renderer.setCellMorphology(cellMorphology);
 }
 
 void MorphologyWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    // Load shaders
-    bool loaded = true;
-    loaded &= _lineShader.loadShaderFromFile(":shaders/PassThrough.vert", ":shaders/Lines.frag");
-
-    if (!loaded) {
-        qCritical() << "Failed to load one of the morphology shaders";
-    }
-
-    // Set projection matrix
-    //_projMatrix.ortho(-1, 1, -1, 1, -1, 1);
-    _viewMatrix.translate(0, 0, 0);
-
-    for (int i = 0; i < 16; i++)
-    {
-        qDebug() << _projMatrix.constData()[i];
-    }
-
-    // Initialize VAO and VBOs
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
-
-    glGenBuffers(1, &rbo);
-    glBindBuffer(GL_ARRAY_BUFFER, rbo);;
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(1);
-
-    glGenBuffers(1, &tbo);
-    glBindBuffer(GL_ARRAY_BUFFER, tbo);
-    glVertexAttribIPointer(2, 1, GL_INT, 0, 0);
-    glEnableVertexAttribArray(2);
+    _renderer.init();
 
     // Start timer
     QTimer* updateTimer = new QTimer();
@@ -138,55 +66,32 @@ void MorphologyWidget::initializeGL()
 
 void MorphologyWidget::resizeGL(int w, int h)
 {
-    glViewport(0, 0, w, h);
-
-    float aspect = w / h;
-    _projMatrix.setToIdentity();
-    _projMatrix.ortho(-aspect, aspect, -1, 1, -1, 1);
+    _renderer.resize(w, h);
 }
-float t = 0;
+
 void MorphologyWidget::paintGL()
 {
+    _renderer.update();
+
     QPainter painter(this);
 
-    painter.beginNativePainting();
-    
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-    //qDebug() << t;
-    t += 1.6f;
-    _viewMatrix.setToIdentity();
-    _viewMatrix.rotate(t, 0, 1, 0);
-
-    _lineShader.bind();
-    _lineShader.uniformMatrix4f("projMatrix", _projMatrix.constData());
-    _lineShader.uniformMatrix4f("viewMatrix", _viewMatrix.constData());
-
-    glBindVertexArray(vao);
-    glDrawArrays(GL_LINES, 0, _segments.size());
-
-    _lineShader.release();
-    glBindVertexArray(0);
-
-    painter.endNativePainting();
-
     QFont font = painter.font();
-    font.setPointSize(24);
+    font.setPointSize(14);
     painter.setFont(font);
     painter.setPen(QPen(Qt::white));
-    painter.drawText(25, 60, "T-Type Class: " + _nd.tTypeClass);
+    painter.drawText(25, 60, "Cell ID: " + _nd.tTypeClass);
     
-    font.setPointSize(16);
+    font.setPointSize(14);
     painter.setFont(font);
-    painter.drawText(25, 100, "T-Type Subclass: " + _nd.tTypeSubClass);
+    painter.drawText(25, 80, "Class: " + _nd.tTypeSubClass);
 
     font.setPointSize(14);
     painter.setFont(font);
-    painter.drawText(25, 140, "T-Type: " + _nd.tType);
+    painter.drawText(25, 100, "Subclass: " + _nd.tType);
 
     font.setPointSize(14);
     painter.setFont(font);
-    painter.drawText(25, 180, "Cortical Layer: " + _nd.corticalLayer);
+    painter.drawText(25, 120, "Cortical Layer: " + _nd.corticalLayer);
 
     painter.drawPixmap(-30, -30, 300, 300, _wheelImage);
 
@@ -247,13 +152,6 @@ bool MorphologyWidget::eventFilter(QObject* target, QEvent* event)
     {
         auto mouseEvent = static_cast<QMouseEvent*>(event);
 
-        QString neuronId = "592479953";
-        if (mouseEvent->x() > 500)
-            neuronId = "595572609";
-        
-        emit changeNeuron(neuronId);
-        qDebug() << "Mouse button press";
-
         break;
     }
 
@@ -268,7 +166,7 @@ bool MorphologyWidget::eventFilter(QObject* target, QEvent* event)
     {
         auto mouseEvent = static_cast<QMouseEvent*>(event);
 
-        t = mouseEvent->x();
+        //t = mouseEvent->x();
 
         break;
     }

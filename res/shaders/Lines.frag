@@ -13,5 +13,9 @@ void main()
         r = 0;
         b = 0.5;
     }
+    if (pass_type == 4) {
+        r = 1;
+        b = 1;
+    }
     fragColor = vec4(r, pass_radius, b, 1);
 }

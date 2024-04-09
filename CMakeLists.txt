@@ -38,14 +38,24 @@ set(SOURCES
     src/CellMorphologyView.json
 )
 
+set(RENDER_SOURCES
+    src/MorphologyRenderer.h
+    src/MorphologyRenderer.cpp
+    src/MorphologyLineRenderer.h
+    src/MorphologyLineRenderer.cpp
+    #src/MorphologyLineSegments.h
+    #src/MorphologyLineSegments.cpp
+)
+
 set(QRESOURCES
     res/resources.qrc
 )
 QT6_ADD_RESOURCES(RESOURCE_FILES ${QRESOURCES})
 
 source_group( Plugin FILES ${SOURCES})
+source_group( Rendering FILES ${RENDER_SOURCES})
 
-add_library(${PROJECT_NAME} SHARED ${SOURCES} ${RESOURCE_FILES})
+add_library(${PROJECT_NAME} SHARED ${SOURCES} ${RENDER_SOURCES} ${RESOURCE_FILES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${MV_INSTALL_DIR}/$<CONFIGURATION>/include/")
 target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/curl/include/")
