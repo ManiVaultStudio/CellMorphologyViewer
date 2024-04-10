@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MorphologyLineRenderer.h"
+#include "MorphologyTubeRenderer.h"
 
 #include "NeuronDescriptor.h"
 
@@ -49,5 +50,5 @@ private:
     QPixmap _evImage;
     QPixmap _wheelImage;
 
-    MorphologyLineRenderer _renderer;
+    MorphologyTubeRenderer _renderer;
 };

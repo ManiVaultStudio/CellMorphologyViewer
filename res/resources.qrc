@@ -2,6 +2,8 @@
     <qresource prefix="/">
         <file>shaders/PassThrough.vert</file>
         <file>shaders/Lines.frag</file>
+        <file>shaders/Model.vert</file>
+        <file>shaders/Tubes.frag</file>
         <file>query.q</file>
     </qresource>
 </RCC>

@@ -2,6 +2,14 @@
 
 #include "MorphologyRenderer.h"
 
+class MorphologyLineSegments
+{
+public:
+    std::vector<mv::Vector3f>   segments;
+    std::vector<float>          segmentRadii;
+    std::vector<int>            segmentTypes;
+};
+
 class MorphologyLineRenderer : public MorphologyRenderer
 {
 public:
@@ -12,4 +20,6 @@ public:
 
 private:
     mv::ShaderProgram _lineShader;
+
+    float t = 0;
 };

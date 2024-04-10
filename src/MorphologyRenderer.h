@@ -1,20 +1,13 @@
 #pragma once
 
 #include "graphics/Shader.h"
+#include "graphics/Vector3f.h"
 
 #include <QOpenGLFunctions_3_3_Core>
 
 #include <QMatrix4x4>
 
 class CellMorphology;
-
-class MorphologyLineSegments
-{
-public:
-    std::vector<mv::Vector3f>   segments;
-    std::vector<float>          segmentRadii;
-    std::vector<int>            segmentTypes;
-};
 
 class MorphologyView
 {
@@ -25,6 +18,9 @@ public:
     GLuint tbo = 0; // Type buffer object
 
     int numVertices = 0;
+
+    float maxExtent;
+    mv::Vector3f centroid;
 };
 
 class MorphologyRenderer : protected QOpenGLFunctions_3_3_Core
@@ -41,4 +37,6 @@ protected:
 
     QMatrix4x4 _projMatrix;
     QMatrix4x4 _viewMatrix;
+
+    float _aspectRatio;
 };

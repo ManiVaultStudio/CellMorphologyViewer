@@ -32,6 +32,7 @@ MorphologyWidget::MorphologyWidget(CellMorphologyView* plugin)
     surfaceFormat.setVersion(4, 3);
     surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
     surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    surfaceFormat.setSamples(16);
 
     setFormat(surfaceFormat);
 }

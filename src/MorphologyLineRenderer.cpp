@@ -80,7 +80,7 @@ void MorphologyLineRenderer::setCellMorphology(const CellMorphology& cellMorphol
 
     _morphologyView = morphView;
 }
-float t = 0;
+
 void MorphologyLineRenderer::update()
 {
     glClearColor(0, 0, 0, 1);

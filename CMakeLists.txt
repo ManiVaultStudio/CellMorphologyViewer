@@ -43,6 +43,8 @@ set(RENDER_SOURCES
     src/MorphologyRenderer.cpp
     src/MorphologyLineRenderer.h
     src/MorphologyLineRenderer.cpp
+    src/MorphologyTubeRenderer.h
+    src/MorphologyTubeRenderer.cpp
     #src/MorphologyLineSegments.h
     #src/MorphologyLineSegments.cpp
 )
