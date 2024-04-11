@@ -10,7 +10,8 @@
 #include <widgets/DropWidget.h>
 #include <actions/StringAction.h>
 
-#include <PointData/PointData.h>
+//#include <PointData/PointData.h>
+#include <TextData/TextData.h>
 #include <CellMorphologyData/CellMorphologyData.h>
 
 #include <QWidget>
@@ -60,13 +61,13 @@ public:
 
 private:
     /** Invoked when the position points dataset changes */
-    void onPointsDatasetChanged();
+    void onCellIdDatasetChanged();
 
     void onCellSelectionChanged();
 
 private:
     DropWidget*                     _dropWidget;                /** Widget for drag and drop behavior */
-    mv::Dataset<Points>             _points;                    /** Points smart pointer */
+    mv::Dataset<Text>               _cellIdData;                /** Points smart pointer */
     mv::Dataset<CellMorphologies>   _cellMorphologies;          /** Points smart pointer */
     QString                         _currentDatasetName;        /** Name of the current dataset */
     QLabel*                         _currentDatasetNameLabel;   /** Label that show the current dataset name */

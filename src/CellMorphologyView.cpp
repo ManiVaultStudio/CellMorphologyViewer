@@ -20,7 +20,7 @@ using namespace mv;
 CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     ViewPlugin(factory),
     _dropWidget(nullptr),
-    _points(),
+    _cellIdData(),
     _currentDatasetName(),
     _currentDatasetNameLabel(new QLabel("Cell IDs")),
     _morphologyWidget(new MorphologyWidget(this)),
@@ -37,7 +37,7 @@ CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     //connect(&_inputAction, &StringAction::stringChanged, this, &CellMorphologyView::dataInputChanged);
     connect(_morphologyWidget, &MorphologyWidget::changeNeuron, this, &CellMorphologyView::onNeuronChanged);
 
-    connect(&_points, &Dataset<Points>::changed, this, &CellMorphologyView::onPointsDatasetChanged);
+    connect(&_cellIdData, &Dataset<Text>::changed, this, &CellMorphologyView::onCellIdDatasetChanged);
 }
 
 void CellMorphologyView::init()
@@ -69,7 +69,7 @@ void CellMorphologyView::init()
         const auto datasetGuiName = dataset->text();
         const auto datasetId = dataset->getId();
         const auto dataType = dataset->getDataType();
-        const auto dataTypes = DataTypes({ PointType, CellMorphologyType });
+        const auto dataTypes = DataTypes({ TextType, CellMorphologyType });
 
         // Visually indicate if the dataset is of the wrong data type and thus cannot be dropped
         if (!dataTypes.contains(dataType)) {
@@ -78,31 +78,28 @@ void CellMorphologyView::init()
         else {
             
             // Get points dataset from the core
-            auto candidateDataset = mv::data().getDataset<Points>(datasetId);
+            auto candidateDataset = mv::data().getDataset<Text>(datasetId);
 
             // Accept points datasets drag and drop
-            if (dataType == PointType) {
+            if (dataType == TextType) {
                 const auto description = QString("Load %1 into example view").arg(datasetGuiName);
 
-                if (!_points.isValid()) {
+                if (!_cellIdData.isValid()) {
                     // Dataset can be dropped
                     dropRegions << new DropWidget::DropRegion(this, "Points", description, "map-marker-alt", true, [this, candidateDataset]() {
-                        _points = candidateDataset;
-                        qDebug() << _points.isValid();
+                        _cellIdData = candidateDataset;
+                        qDebug() << _cellIdData.isValid();
                     });
                 }
                 else {
-                    if (_points == candidateDataset) {
+                    if (_cellIdData == candidateDataset) {
                         // Dataset cannot be dropped because it is already loaded
                         dropRegions << new DropWidget::DropRegion(this, "Warning", "Data already loaded", "exclamation-circle", false);
                     }
                     else {
                         // Dataset can be dropped
                         dropRegions << new DropWidget::DropRegion(this, "Points", description, "map-marker-alt", true, [this, candidateDataset]() {
-                            _points = candidateDataset;
-
-                            int32_t b = _points->visitData<std::int32_t>([](auto vec) { return vec[0][0]; });
-                            qDebug() << b;
+                            _cellIdData = candidateDataset;
                         });
                     }
                 }
@@ -146,13 +143,13 @@ void CellMorphologyView::init()
     getWidget().setLayout(layout);
 
     // Respond when the name of the dataset in the dataset reference changes
-    connect(&_points, &Dataset<Points>::guiNameChanged, this, [this]()
+    connect(&_cellIdData, &Dataset<Text>::guiNameChanged, this, [this]()
     {
         // Update the current dataset name label
-        _currentDatasetNameLabel->setText(QString("Current points dataset: %1").arg(_points->getGuiName()));
+        _currentDatasetNameLabel->setText(QString("Current points dataset: %1").arg(_cellIdData->getGuiName()));
 
         // Only show the drop indicator when nothing is loaded in the dataset reference
-        _dropWidget->setShowDropIndicator(_points->getGuiName().isEmpty());
+        _dropWidget->setShowDropIndicator(_cellIdData->getGuiName().isEmpty());
     });
 
     // Alternatively, classes which derive from hdsp::EventListener (all plugins do) can also respond to events
@@ -160,7 +157,7 @@ void CellMorphologyView::init()
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetDataChanged));
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetRemoved));
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetDataSelectionChanged));
-    _eventListener.registerDataEventByType(PointType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
+    _eventListener.registerDataEventByType(TextType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
 
     Query query;
     _neuronList = query.send();
@@ -220,7 +217,7 @@ void CellMorphologyView::onDataEvent(mv::DatasetEvent* dataEvent)
             const auto dataSelectionChangedEvent = static_cast<DatasetDataSelectionChangedEvent*>(dataEvent);
 
             // Get the selection set that changed
-            const auto& selectionSet = changedDataSet->getSelection<Points>();
+            const auto& selectionSet = changedDataSet->getSelection<Text>();
 
             // Print to the console
             qDebug() << datasetGuiName << "selection has changed";
@@ -265,18 +262,17 @@ void CellMorphologyView::onNeuronChanged(QString cellId)
     _morphologyWidget->setCellMorphology(cellMorphology);
 }
 
-void CellMorphologyView::onPointsDatasetChanged()
+void CellMorphologyView::onCellIdDatasetChanged()
 {
-    connect(&_points, &Dataset<Points>::dataSelectionChanged, this, &CellMorphologyView::onCellSelectionChanged);
+    connect(&_cellIdData, &Dataset<Text>::dataSelectionChanged, this, &CellMorphologyView::onCellSelectionChanged);
 }
 
 void CellMorphologyView::onCellSelectionChanged()
 {
-    qDebug() << "Beep selection changed";
-    if (!_points.isValid())
+    if (!_cellIdData.isValid())
         return;
 
-    auto selectionDataset = _points->getSelection();
+    auto selectionDataset = _cellIdData->getSelection();
 
     const std::vector<uint32_t>& indices = selectionDataset->getSelectionIndices();
 
@@ -285,12 +281,12 @@ void CellMorphologyView::onCellSelectionChanged()
 
     uint32_t cellIndex = indices[0];
 
-    int32_t cellId = _points->visitData<std::int32_t>([cellIndex](auto vec) { return vec[cellIndex][0]; });
+    std::vector<QString> cellIds = _cellIdData->getColumn("cell_id");
+
+    QString cellId = cellIds[cellIndex];
     qDebug() << cellId;
 
-    QString cellIdString = QString::number(cellId);
-    qDebug() << cellIdString;
-    onNeuronChanged(cellIdString);
+    onNeuronChanged(cellId);
 }
 
 ViewPlugin* CellMorphologyPluginFactory::produce()
@@ -303,7 +299,7 @@ mv::DataTypes CellMorphologyPluginFactory::supportedDataTypes() const
     DataTypes supportedTypes;
 
     // This example analysis plugin is compatible with points datasets
-    supportedTypes.append(PointType);
+    supportedTypes.append(TextType);
 
     return supportedTypes;
 }
@@ -318,7 +314,7 @@ mv::gui::PluginTriggerActions CellMorphologyPluginFactory::getPluginTriggerActio
 
     const auto numberOfDatasets = datasets.count();
 
-    if (numberOfDatasets >= 1 && PluginFactory::areAllDatasetsOfTheSameType(datasets, PointType)) {
+    if (numberOfDatasets >= 1 && PluginFactory::areAllDatasetsOfTheSameType(datasets, TextType)) {
         auto pluginTriggerAction = new PluginTriggerAction(const_cast<CellMorphologyPluginFactory*>(this), this, "Example", "View example data", getIcon(), [this, getPluginInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
             for (auto dataset : datasets)
                 getPluginInstance();
