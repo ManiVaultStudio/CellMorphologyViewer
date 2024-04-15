@@ -20,7 +20,7 @@ class CellMorphologyViewerConan(ConanFile):
     name = "CellMorphologyViewer"
     description = """Viewer of cell morphology data as described in a .swc file."""
     topics = ("manivault", "plugin", "view", "morphology")
-    url = "https://github.com/ManiVaultStudio/CellMorphologyViewer/tree/release/core_hmba_2024/1.0"
+    url = "https://github.com/ManiVaultStudio/CellMorphologyViewer"
     author = "julianthijssen@gmail.com"  # conan recipe author
     license = "LGPL 3.0"
 
@@ -94,7 +94,6 @@ class CellMorphologyViewerConan(ConanFile):
         if self.settings.os == "Linux" or self.settings.os == "Macos":
             tc.variables["CMAKE_CXX_STANDARD_REQUIRED"] = "ON"
         tc.variables["CMAKE_PREFIX_PATH"] = qt_root
-        tc.variables["USE_ARTIFACTORY_LIBS"] = "ON"
         
         # Set the installation directory for ManiVault based on the MV_INSTALL_DIR environment variable
         # or if none is specified, set it to the build/install dir.
@@ -130,7 +129,6 @@ class CellMorphologyViewerConan(ConanFile):
         cmake.install(build_type="Release")
 
     def package(self):
-        # Todo package the openblas and fai along with the GradientViewer
         package_dir = os.path.join(self.build_folder, "package")
         print("Packaging install dir: ", package_dir)
         subprocess.run(
