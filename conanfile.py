@@ -32,6 +32,8 @@ class CellMorphologyViewerConan(ConanFile):
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {"shared": True, "fPIC": True}
 
+    requires = ("CellMorphologyData/1.0@lkeb/stable")
+
     # Qt requirement is inherited from mv-core
 
     scm = {
