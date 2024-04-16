@@ -52,9 +52,6 @@ class CellMorphologyViewerConan(ConanFile):
 
     def export(self):
         print("In export")
-        print(f"sourcefolder: {self.source_folder} present: {pathlib.Path(self.source_folder).exists()}")
-        print(f"buildfolder: {self.build_folder} present: {pathlib.Path(self.build_folder).exists()}")
-        
         # save the original source path to the directory used to build the package
         save(
             pathlib.Path(self.export_folder, "__gitpath.txt"),
