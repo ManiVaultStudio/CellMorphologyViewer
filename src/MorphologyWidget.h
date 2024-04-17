@@ -37,7 +37,7 @@ protected:
 
     bool eventFilter(QObject* target, QEvent* event);
 
-    void downloadFinished(QNetworkReply* reply);
+    //void downloadFinished(QNetworkReply* reply);
 
 signals:
     void changeNeuron(QString neuronId);

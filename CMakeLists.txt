@@ -32,9 +32,9 @@ set(SOURCES
     src/MorphologyWidget.h
     src/MorphologyWidget.cpp
     src/NeuronDescriptor.h
-    src/Query.h
-    src/Query.cpp
-    src/ImageQuery.h
+    #src/Query.h
+    #src/Query.cpp
+    #src/ImageQuery.h
     src/CellMorphologyView.json
 )
 
@@ -60,7 +60,7 @@ source_group( Rendering FILES ${RENDER_SOURCES})
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${RENDER_SOURCES} ${RESOURCE_FILES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${MV_INSTALL_DIR}/$<CONFIGURATION>/include/")
-target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/curl/include/")
+#target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/curl/include/")
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
@@ -96,7 +96,7 @@ set(CELL_MORPHOLOGY_DATA_LINK_LIBRARY "${PLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRAR
 target_link_libraries(${PROJECT_NAME} PRIVATE "${MV_LINK_LIBRARY}")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${TEXTDATA_LINK_LIBRARY}")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${CELL_MORPHOLOGY_DATA_LINK_LIBRARY}")
-target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/curl/lib/libcurl_imp.lib")
+#target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/curl/lib/libcurl_imp.lib")
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different

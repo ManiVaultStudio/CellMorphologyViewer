@@ -2,7 +2,7 @@
 
 #include <event/Event.h>
 
-#include "Query.h"
+//#include "Query.h"
 
 #include "CellMorphologyData/CellMorphology.h"
 
@@ -159,8 +159,8 @@ void CellMorphologyView::init()
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetDataSelectionChanged));
     _eventListener.registerDataEventByType(TextType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
 
-    Query query;
-    _neuronList = query.send();
+    //Query query;
+    //_neuronList = query.send();
 }
 
 void CellMorphologyView::onDataEvent(mv::DatasetEvent* dataEvent)

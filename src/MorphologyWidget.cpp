@@ -3,11 +3,11 @@
 #include "CellMorphologyView.h"
 
 #include "CellMorphologyData/CellMorphology.h"
-#include "ImageQuery.h"
+//#include "ImageQuery.h"
 
 #include <QPainter>
-#include <QNetworkAccessManager>
-#include <QSslSocket>
+//#include <QNetworkAccessManager>
+//#include <QSslSocket>
 #include <QEvent>
 #include <QResizeEvent>
 
@@ -112,17 +112,17 @@ void MorphologyWidget::updateNeuron(NeuronDescriptor nd)
 {
     _nd = nd;
 
-    qDebug() << QSslSocket::supportsSsl() << QSslSocket::sslLibraryBuildVersionString() << QSslSocket::sslLibraryVersionString();
+    //qDebug() << QSslSocket::supportsSsl() << QSslSocket::sslLibraryBuildVersionString() << QSslSocket::sslLibraryVersionString();
 
-    QByteArray ba = loadImage(_nd.morphologyUrl);
+    //QByteArray ba = loadImage(_nd.morphologyUrl);
 
-    _morphologyImage.loadFromData(ba);
+    //_morphologyImage.loadFromData(ba);
 
-    ba = loadImage(_nd.evUrl);
-    _evImage.loadFromData(ba);
+    //ba = loadImage(_nd.evUrl);
+    //_evImage.loadFromData(ba);
 
-    ba = loadImage(_nd.wheelUrl);
-    _wheelImage.loadFromData(ba);
+    //ba = loadImage(_nd.wheelUrl);
+    //_wheelImage.loadFromData(ba);
 
     //QNetworkAccessManager* nam = new QNetworkAccessManager(this);
     //connect(nam, &QNetworkAccessManager::finished, this, &MorphologyWidget::downloadFinished);
@@ -131,10 +131,10 @@ void MorphologyWidget::updateNeuron(NeuronDescriptor nd)
     //nam->get(request);
 }
 
-void MorphologyWidget::downloadFinished(QNetworkReply* reply)
-{
-    _morphologyImage.loadFromData(reply->readAll());
-}
+//void MorphologyWidget::downloadFinished(QNetworkReply* reply)
+//{
+//    _morphologyImage.loadFromData(reply->readAll());
+//}
 
 bool MorphologyWidget::eventFilter(QObject* target, QEvent* event)
 {
