@@ -6,6 +6,7 @@
 
 #include <QMatrix4x4>
 #include <QVector3D>
+#include <QtMath>
 
 std::vector<mv::Vector3f> sphereVertices = {
     mv::Vector3f(0.000000, -1.000000, 0.000000),
@@ -82,9 +83,9 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
         int j = (i + 1) % numVertices;
 
         float degRoti = ((float)i / numVertices) * 360;
-        float radRoti = degRoti * (mv::util::PI / 180);
+        float radRoti = qDegreesToRadians(degRoti);
         float degRotj = ((float)j / numVertices) * 360;
-        float radRotj = degRotj * (mv::util::PI / 180);
+        float radRotj = qDegreesToRadians(degRotj);
 
         mv::Vector3f v0(cos(radRoti), 0, sin(radRoti));
         mv::Vector3f v1(cos(radRotj), 0, sin(radRotj));
