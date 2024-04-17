@@ -80,7 +80,7 @@ void MorphologyWidget::paintGL()
     font.setPointSize(14);
     painter.setFont(font);
     painter.setPen(QPen(Qt::white));
-    painter.drawText(25, 60, "Cell ID: " + _nd.tTypeClass);
+    painter.drawText(25, 60, "Cell ID: " + _cellId);
     
     font.setPointSize(14);
     painter.setFont(font);
@@ -88,7 +88,7 @@ void MorphologyWidget::paintGL()
 
     font.setPointSize(14);
     painter.setFont(font);
-    painter.drawText(25, 100, "Subclass: " + _nd.tType);
+    painter.drawText(25, 100, "Subclass: " + _subclass);
 
     font.setPointSize(14);
     painter.setFont(font);

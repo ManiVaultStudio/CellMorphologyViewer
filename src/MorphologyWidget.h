@@ -27,6 +27,7 @@ public:
 
     void updateNeuron(NeuronDescriptor nd);
     void setCellMorphology(const CellMorphology& cellMorphology);
+    void setCellMetadata(QString cellId, QString subclass) { _cellId = cellId; _subclass = subclass; }
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
@@ -49,6 +50,9 @@ private:
     QPixmap _morphologyImage;
     QPixmap _evImage;
     QPixmap _wheelImage;
+
+    QString _cellId;
+    QString _subclass;
 
     MorphologyTubeRenderer _renderer;
 };

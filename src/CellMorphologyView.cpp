@@ -235,8 +235,23 @@ void CellMorphologyView::dataInputChanged(const QString& dataInput)
 
 }
 
-void CellMorphologyView::onNeuronChanged(QString cellId)
+void CellMorphologyView::onNeuronChanged()
 {
+    auto selectionDataset = _cellIdData->getSelection();
+
+    const std::vector<uint32_t>& indices = selectionDataset->getSelectionIndices();
+
+    if (indices.empty())
+        return;
+
+    uint32_t cellIndex = indices[0];
+
+    std::vector<QString> cellIds = _cellIdData->getColumn("cell_id");
+    std::vector<QString> cellSubclasses = _cellIdData->getColumn("tree_subclass");
+
+    QString cellId = cellIds[cellIndex];
+    qDebug() << cellId;
+
     if (!_cellMorphologies.isValid())
     {
         qWarning() << "No cell morphology dataset set.";
@@ -244,11 +259,11 @@ void CellMorphologyView::onNeuronChanged(QString cellId)
     }
 
     // Get index of cell identifier
-    const QStringList& cellIds = _cellMorphologies->getCellIdentifiers();
+    const QStringList& cellIdsStringList = _cellMorphologies->getCellIdentifiers();
 
-    int cellIndex = cellIds.indexOf(cellId);
+    int cellIndex2 = cellIdsStringList.indexOf(cellId);
 
-    if (cellIndex == -1)
+    if (cellIndex2 == -1)
     {
         qWarning() << "Failed to find cell with ID: " << cellId << " in the morphology dataset.";
         return;
@@ -257,9 +272,10 @@ void CellMorphologyView::onNeuronChanged(QString cellId)
     // Get cell morphology at index
     const std::vector<CellMorphology>& cellMorphologies = _cellMorphologies->getData();
 
-    const CellMorphology& cellMorphology = cellMorphologies[cellIndex];
+    const CellMorphology& cellMorphology = cellMorphologies[cellIndex2];
 
     _morphologyWidget->setCellMorphology(cellMorphology);
+    _morphologyWidget->setCellMetadata(cellId, cellSubclasses[cellIndex]);
 }
 
 void CellMorphologyView::onCellIdDatasetChanged()
@@ -272,21 +288,7 @@ void CellMorphologyView::onCellSelectionChanged()
     if (!_cellIdData.isValid())
         return;
 
-    auto selectionDataset = _cellIdData->getSelection();
-
-    const std::vector<uint32_t>& indices = selectionDataset->getSelectionIndices();
-
-    if (indices.empty())
-        return;
-
-    uint32_t cellIndex = indices[0];
-
-    std::vector<QString> cellIds = _cellIdData->getColumn("cell_id");
-
-    QString cellId = cellIds[cellIndex];
-    qDebug() << cellId;
-
-    onNeuronChanged(cellId);
+    onNeuronChanged();
 }
 
 ViewPlugin* CellMorphologyPluginFactory::produce()

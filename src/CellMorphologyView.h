@@ -55,7 +55,7 @@ public:
      * @param dataEvent Data event which occurred
      */
     void onDataEvent(mv::DatasetEvent* dataEvent);
-    void onNeuronChanged(QString neuronId);
+    void onNeuronChanged();
 
     void dataInputChanged(const QString& dataInput);
 
