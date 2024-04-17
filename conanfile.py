@@ -104,7 +104,10 @@ class CellMorphologyViewerConan(ConanFile):
         print("MV_INSTALL_DIR: ", os.environ["MV_INSTALL_DIR"])
         self.install_dir = pathlib.Path(os.environ["MV_INSTALL_DIR"]).as_posix()
         # Give the installation directory to CMake
+        MV_CMD_PATH = pathlib.Path(self.deps_cpp_info["CellMorphologyData"].rootpath).as_posix()
+        print(f"MV_CMD_INSTALL_DIR: {MV_CMD_PATH}")
         tc.variables["MV_INSTALL_DIR"] = self.install_dir
+        tc.variables["MV_CMD_INSTALL_DIR"] = MV_CMD_PATH
         
         tc.generate()
 
