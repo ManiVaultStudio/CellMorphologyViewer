@@ -29,6 +29,10 @@ if(NOT DEFINED MV_INSTALL_DIR)
 endif()
 file(TO_CMAKE_PATH ${MV_INSTALL_DIR} MV_INSTALL_DIR)
 
+if(NOT DEFINED MV_CMD_INSTALL_DIR) 
+    set(MV_CMD_INSTALL_DIR ${MV_INSTALL_DIR} CACHE PATH "Directory where CellMorphologyData is installed")
+endif()
+
 # -----------------------------------------------------------------------------
 # Dependencies
 # -----------------------------------------------------------------------------
@@ -86,6 +90,7 @@ add_library(${PROJECT_NAME} SHARED ${PLUGIN_SOURCES} ${RENDER_SOURCES} ${RESOURC
 # Include ManiVault headers, including system data plugins
 target_include_directories(${PROJECT_NAME} PRIVATE "${MV_INSTALL_DIR}/$<CONFIGURATION>/include/")
 #target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/curl/include/")
+target_include_directories(${PROJECT_NAME} PRIVATE "${MV_CMD_INSTALL_DIR}/$<CONFIGURATION>/include/")
 
 
 # -----------------------------------------------------------------------------
@@ -112,12 +117,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Network)
 # to adapt the MV_LINK_PATH and PLUGIN_LINK_PATH to your install folder
 set(MV_LINK_PATH "${MV_INSTALL_DIR}/$<CONFIGURATION>/lib")
 set(PLUGIN_LINK_PATH "${MV_INSTALL_DIR}/$<CONFIGURATION>/$<IF:$<CXX_COMPILER_ID:MSVC>,lib,Plugins>")
+set(CMDPLUGIN_LINK_PATH "${MV_CMD_INSTALL_DIR}/$<CONFIGURATION>/$<IF:$<CXX_COMPILER_ID:MSVC>,lib,Plugins>")
 set(MV_LINK_SUFFIX $<IF:$<CXX_COMPILER_ID:MSVC>,${CMAKE_LINK_LIBRARY_SUFFIX},${CMAKE_SHARED_LIBRARY_SUFFIX}>)
 
 set(MV_LINK_LIBRARY "${MV_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}MV_Public${MV_LINK_SUFFIX}")
 set(TEXTDATA_LINK_LIBRARY "${PLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}TextData${MV_LINK_SUFFIX}")
 set(POINTDATA_LINK_LIBRARY "${PLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}PointData${MV_LINK_SUFFIX}")
-set(CELL_MORPHOLOGY_DATA_LINK_LIBRARY "${PLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}CellMorphologyData${MV_LINK_SUFFIX}")
+set(CELL_MORPHOLOGY_DATA_LINK_LIBRARY "${CMDPLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}CellMorphologyData${MV_LINK_SUFFIX}")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE "${MV_LINK_LIBRARY}")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${TEXTDATA_LINK_LIBRARY}")
