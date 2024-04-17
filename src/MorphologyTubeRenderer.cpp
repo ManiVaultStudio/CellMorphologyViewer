@@ -130,7 +130,7 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
 
             mv::Vector3f direction = (position - parentPosition);
             float length = direction.length();
-            if (isinf(length))
+            if (std::isinf(length))
             {
                 std::cout << position.str() << "  " << parentPosition.str() << std::endl;
             }
@@ -162,7 +162,7 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
                 QVector3D v(tubeVertices[j].x, tubeVertices[j].y, tubeVertices[j].z);
                 QVector3D tv = Tr.map(v);
                 transformedTubeVertices[j] = mv::Vector3f(tv.x(), tv.y(), tv.z());
-                if (j == 0 && isnan(transformedTubeVertices[j].x)) qDebug() << "trans: " << Tr << T << R << S;
+                if (j == 0 && std::isnan(transformedTubeVertices[j].x)) qDebug() << "trans: " << Tr << T << R << S;
             }
 
             allTubeVertices.insert(allTubeVertices.end(), transformedTubeVertices.begin(), transformedTubeVertices.end());
