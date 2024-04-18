@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.1.0)
 
+# -----------------------------------------------------------------------------
+# CellMorphologyViewer
+# -----------------------------------------------------------------------------
 PROJECT("CellMorphologyViewer")
 
+# -----------------------------------------------------------------------------
+# CMake Options
+# -----------------------------------------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -23,10 +29,17 @@ if(NOT DEFINED MV_INSTALL_DIR)
 endif()
 file(TO_CMAKE_PATH ${MV_INSTALL_DIR} MV_INSTALL_DIR)
 
+# -----------------------------------------------------------------------------
+# Dependencies
+# -----------------------------------------------------------------------------
 #find_package(OpenSSL REQUIRED)
-find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGLWidgets Network REQUIRED)
+find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGLWidgets REQUIRED)
 
-set(SOURCES
+# -----------------------------------------------------------------------------
+# Source files
+# -----------------------------------------------------------------------------
+# Define the plugin sources
+set(PLUGIN_SOURCES
     src/CellMorphologyView.h
     src/CellMorphologyView.cpp
     src/MorphologyWidget.h
@@ -54,21 +67,29 @@ set(QRESOURCES
 )
 QT6_ADD_RESOURCES(RESOURCE_FILES ${QRESOURCES})
 
-source_group( Plugin FILES ${SOURCES})
+source_group( Plugin FILES ${PLUGIN_SOURCES})
 source_group( Rendering FILES ${RENDER_SOURCES})
 
-add_library(${PROJECT_NAME} SHARED ${SOURCES} ${RENDER_SOURCES} ${RESOURCE_FILES})
+# -----------------------------------------------------------------------------
+# CMake Target
+# -----------------------------------------------------------------------------
+# Create dynamic library for the plugin
+add_library(${PROJECT_NAME} SHARED ${PLUGIN_SOURCES} ${RENDER_SOURCES} ${RESOURCE_FILES})
 
+# -----------------------------------------------------------------------------
+# Target include directories
+# -----------------------------------------------------------------------------
+# Include ManiVault headers, including system data plugins
 target_include_directories(${PROJECT_NAME} PRIVATE "${MV_INSTALL_DIR}/$<CONFIGURATION>/include/")
 #target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/curl/include/")
 
+
+# -----------------------------------------------------------------------------
+# Target properties
+# -----------------------------------------------------------------------------
+# Request C++17
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
-if(MSVC)
-    set(LIB_LINK_SUFFIX ".lib") 
-else()
-    set(LIB_LINK_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}")
-endif(MSVC)
 
 # -----------------------------------------------------------------------------
 # Target library linking
@@ -98,10 +119,20 @@ target_link_libraries(${PROJECT_NAME} PRIVATE "${TEXTDATA_LINK_LIBRARY}")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${CELL_MORPHOLOGY_DATA_LINK_LIBRARY}")
 #target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/curl/lib/libcurl_imp.lib")
 
+# -----------------------------------------------------------------------------
+# Target installation
+# -----------------------------------------------------------------------------
+# Install the shared plugin libary to the "Plugins" folder in the ManiVault install directory
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION Plugins COMPONENT PLUGINS # Windows .dll
+    LIBRARY DESTINATION Plugins COMPONENT PLUGINS # Linux/Mac .so
+)
+
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-    "$<TARGET_FILE:${PROJECT_NAME}>"
-    "${MV_INSTALL_DIR}/$<CONFIGURATION>/Plugins/$<TARGET_FILE_NAME:${PROJECT_NAME}>"
+    COMMAND "${CMAKE_COMMAND}"
+        --install ${CMAKE_CURRENT_BINARY_DIR}
+        --config $<CONFIGURATION>
+        --prefix ${MV_INSTALL_DIR}/$<CONFIGURATION>
 )
 
 # -----------------------------------------------------------------------------
@@ -110,5 +141,5 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 # Automatically set the debug environment (command + working directory) for MSVC
 if(MSVC)
     set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY $<IF:$<CONFIG:DEBUG>,${MV_INSTALL_DIR}/debug,${MV_INSTALL_DIR}/release>)
-    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_COMMAND $<IF:$<CONFIG:DEBUG>,"${MV_INSTALL_DIR}/debug/ManiVault Studio.exe","${MV_INSTALL_DIR}/release/ManiVault Studio.exe">)
+    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_COMMAND $<IF:$<CONFIG:DEBUG>,${MV_INSTALL_DIR}/debug/ManiVault\ Studio.exe,${MV_INSTALL_DIR}/release/ManiVault\ Studio.exe>)
 endif()
