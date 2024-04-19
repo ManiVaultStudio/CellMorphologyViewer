@@ -107,6 +107,8 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
 
     // Generate tube segments
     std::vector<mv::Vector3f> allTubeVertices;
+    std::vector<int> types;
+
     try
     {
         for (int i = 0; i < cellMorphology.ids.size(); i++)
@@ -125,6 +127,10 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
 
             int parentIdx = cellMorphology.idMap.at(cellMorphology.parents[i]);
             mv::Vector3f parentPosition = cellMorphology.positions[parentIdx];
+            float parentType = cellMorphology.types[parentIdx];
+            float parentRadius = cellMorphology.radii[parentIdx];
+            if (parentType == 1)
+                parentRadius *= 0.5f;
 
             std::vector<mv::Vector3f> transformedTubeVertices(tubeVertices.size());
 
@@ -152,20 +158,35 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
             QMatrix4x4 R;
             R.rotate(qRadiansToDegrees(angle), perp);
 
-            QMatrix4x4 S;
-            S.scale(radius, length, radius);
+            QMatrix4x4 Su;
+            Su.scale(radius, length, radius);
 
-            QMatrix4x4 Tr = T * R * S;
+            QMatrix4x4 Sl;
+            Sl.scale(parentRadius, length, parentRadius);
+
+            QMatrix4x4 Tru = T * R * Su;
+            QMatrix4x4 Trl = T * R * Sl;
 
             for (int j = 0; j < transformedTubeVertices.size(); j++)
             {
                 QVector3D v(tubeVertices[j].x, tubeVertices[j].y, tubeVertices[j].z);
-                QVector3D tv = Tr.map(v);
+                QVector3D tv;
+                if (tubeVertices[j].y > 0.5)
+                    tv = Tru.map(v);
+                else
+                    tv = Trl.map(v);
                 transformedTubeVertices[j] = mv::Vector3f(tv.x(), tv.y(), tv.z());
-                if (j == 0 && std::isnan(transformedTubeVertices[j].x)) qDebug() << "trans: " << Tr << T << R << S;
+                if (j == 0 && std::isnan(transformedTubeVertices[j].x)) qDebug() << "trans: " << Tru << T << R << Su;
             }
 
             allTubeVertices.insert(allTubeVertices.end(), transformedTubeVertices.begin(), transformedTubeVertices.end());
+            std::vector<int> segmentTypes(transformedTubeVertices.size(), cellMorphology.types[parentIdx]);
+            for (int j = 0; j < segmentTypes.size(); j++)
+            {
+                if (tubeVertices[j].y > 0.5)
+                    segmentTypes[j] = cellMorphology.types[i];
+            }
+            types.insert(types.end(), segmentTypes.begin(), segmentTypes.end());
         }
     }
     catch (std::out_of_range& oor)
@@ -183,6 +204,7 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
         v = v * somaRadius * 0.5f;
         v = v + mv::Vector3f(somaPosition);
         allTubeVertices.push_back(v);
+        types.push_back(1);
     }
 
     // Initialize VAO and VBOs
@@ -200,10 +222,10 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
     //glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, 0);
     //glEnableVertexAttribArray(1);
 
-    //glGenBuffers(1, &morphView.tbo);
-    //glBindBuffer(GL_ARRAY_BUFFER, morphView.tbo);
-    //glVertexAttribIPointer(2, 1, GL_INT, 0, 0);
-    //glEnableVertexAttribArray(2);
+    glGenBuffers(1, &morphView.tbo);
+    glBindBuffer(GL_ARRAY_BUFFER, morphView.tbo);
+    glVertexAttribIPointer(2, 1, GL_INT, 0, 0);
+    glEnableVertexAttribArray(2);
 
     // Store data on GPU
     glBindVertexArray(morphView.vao);
@@ -214,8 +236,8 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
     //glBindBuffer(GL_ARRAY_BUFFER, morphView.rbo);
     //glBufferData(GL_ARRAY_BUFFER, segmentRadii.size() * sizeof(float), segmentRadii.data(), GL_STATIC_DRAW);
 
-    //glBindBuffer(GL_ARRAY_BUFFER, morphView.tbo);
-    //glBufferData(GL_ARRAY_BUFFER, segmentTypes.size() * sizeof(int), segmentTypes.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, morphView.tbo);
+    glBufferData(GL_ARRAY_BUFFER, types.size() * sizeof(int), types.data(), GL_STATIC_DRAW);
 
     morphView.numVertices = allTubeVertices.size();
     qDebug() << ">>>>>>>>>>>>>>>>>>>>> Num vertices: " << morphView.numVertices;
@@ -230,8 +252,9 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
 
 void MorphologyTubeRenderer::update()
 {
+    glEnable(GL_DEPTH_TEST);
     glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     t += 1.6f;
 
