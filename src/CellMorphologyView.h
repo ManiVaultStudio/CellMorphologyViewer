@@ -2,13 +2,16 @@
 
 #include "MorphologyWidget.h"
 
+#include "SettingsAction.h"
+
 #include "NeuronDescriptor.h"
 
 #include <ViewPlugin.h>
 
 #include <Dataset.h>
 #include <widgets/DropWidget.h>
-#include <actions/StringAction.h>
+#include <Actions/StringAction.h>
+#include <Actions/HorizontalToolbarAction.h>
 
 //#include <PointData/PointData.h>
 #include <TextData/TextData.h>
@@ -66,6 +69,8 @@ private:
     void onCellSelectionChanged();
 
 private:
+    HorizontalToolbarAction         _primaryToolbarAction;      /** Horizontal toolbar for primary content */
+    SettingsAction                  _settingsAction;
     DropWidget*                     _dropWidget;                /** Widget for drag and drop behavior */
     mv::Dataset<Text>               _cellIdData;                /** Points smart pointer */
     mv::Dataset<CellMorphologies>   _cellMorphologies;          /** Points smart pointer */

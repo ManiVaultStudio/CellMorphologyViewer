@@ -45,6 +45,8 @@ set(PLUGIN_SOURCES
     src/MorphologyWidget.h
     src/MorphologyWidget.cpp
     src/NeuronDescriptor.h
+    src/SettingsAction.h
+    src/SettingsAction.cpp
     #src/Query.h
     #src/Query.cpp
     #src/ImageQuery.h

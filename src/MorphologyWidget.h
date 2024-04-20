@@ -18,6 +18,11 @@
 class CellMorphologyView;
 class CellMorphology;
 
+enum class RenderMode
+{
+    LINE, REAL
+};
+
 class MorphologyWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
@@ -25,6 +30,10 @@ public:
     MorphologyWidget(CellMorphologyView* plugin);
     ~MorphologyWidget();
 
+    void setRenderMode(RenderMode renderMode)
+    {
+        _renderMode = renderMode;
+    }
     void updateNeuron(NeuronDescriptor nd);
     void setCellMorphology(const CellMorphology& cellMorphology);
     void setCellMetadata(QString cellId, QString subclass) { _cellId = cellId; _subclass = subclass; }
@@ -54,5 +63,7 @@ private:
     QString _cellId;
     QString _subclass;
 
-    MorphologyTubeRenderer _renderer;
+    MorphologyLineRenderer _lineRenderer;
+    MorphologyTubeRenderer _tubeRenderer;
+    RenderMode _renderMode;
 };

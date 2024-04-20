@@ -28,7 +28,7 @@ class MorphologyRenderer : protected QOpenGLFunctions_3_3_Core
 public:
     virtual void init() = 0;
     void resize(int w, int h);
-    virtual void update() = 0;
+    virtual void update(float t) = 0;
 
     virtual void setCellMorphology(const CellMorphology& cellMorphology) = 0;
 

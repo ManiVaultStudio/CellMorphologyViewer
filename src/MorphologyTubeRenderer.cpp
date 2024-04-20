@@ -250,17 +250,15 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
     _morphologyView = morphView;
 }
 
-void MorphologyTubeRenderer::update()
+void MorphologyTubeRenderer::update(float t)
 {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    t += 1.6f;
-
     _projMatrix.setToIdentity();
     mv::Vector3f centroid = _morphologyView.centroid;
-    float maxExtent = _morphologyView.maxExtent;
+    float maxExtent = _morphologyView.maxExtent / 2;
 
     _projMatrix.ortho(-maxExtent * _aspectRatio, maxExtent * _aspectRatio, -maxExtent, maxExtent, -maxExtent, maxExtent);
 
@@ -277,4 +275,15 @@ void MorphologyTubeRenderer::update()
     glBindVertexArray(0);
 
     _shader.release();
+}
+
+void MorphologyTubeRenderer::reloadShaders()
+{
+    // Load shaders
+    bool loaded = true;
+    loaded &= _shader.loadShaderFromFile(":shaders/Model.vert", ":shaders/Tubes.frag");
+
+    if (!loaded) {
+        qCritical() << "Failed to load one of the morphology shaders";
+    }
 }

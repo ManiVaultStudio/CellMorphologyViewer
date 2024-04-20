@@ -19,9 +19,25 @@ void MorphologyLineRenderer::setCellMorphology(const CellMorphology& cellMorphol
 {
     MorphologyLineSegments lineSegments;
 
+    mv::Vector3f                somaPosition;
+    float                       somaRadius;
+
     // Generate line segments
     try
     {
+        for (int i = 0; i < cellMorphology.ids.size(); i++)
+        {
+            mv::Vector3f position = cellMorphology.positions.at(i);
+            float radius = cellMorphology.radii.at(i);
+
+            if (cellMorphology.types.at(i) == 1) // Soma
+            {
+                somaPosition = position;
+                somaRadius = radius;
+                break;
+            }
+        }
+
         for (int i = 1; i < cellMorphology.parents.size(); i++)
         {
             if (cellMorphology.parents[i] == -1) // New root found, there is no line segment here so skip it
@@ -78,17 +94,26 @@ void MorphologyLineRenderer::setCellMorphology(const CellMorphology& cellMorphol
 
     morphView.numVertices = lineSegments.segments.size();
 
+    morphView.centroid = somaPosition;
+    mv::Vector3f range = cellMorphology.maxRange - cellMorphology.minRange;
+    float maxExtent = std::max(std::max(range.x, range.y), range.z);
+    morphView.maxExtent = maxExtent;
+
     _morphologyView = morphView;
 }
 
-void MorphologyLineRenderer::update()
+void MorphologyLineRenderer::update(float t)
 {
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    t += 1.6f;
+    mv::Vector3f centroid = _morphologyView.centroid;
+    float maxExtent = _morphologyView.maxExtent / 2;
+
     _viewMatrix.setToIdentity();
+    _viewMatrix.scale(1.0f / maxExtent);
     _viewMatrix.rotate(t, 0, 1, 0);
+    _viewMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
 
     _lineShader.bind();
     _lineShader.uniformMatrix4f("projMatrix", _projMatrix.constData());

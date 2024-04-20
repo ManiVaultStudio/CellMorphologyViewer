@@ -17,7 +17,8 @@
 
 using namespace mv;
 
-MorphologyWidget::MorphologyWidget(CellMorphologyView* plugin)
+MorphologyWidget::MorphologyWidget(CellMorphologyView* plugin) :
+    _renderMode(RenderMode::LINE)
 {
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
@@ -48,14 +49,16 @@ void MorphologyWidget::setCellMorphology(const CellMorphology& cellMorphology)
         return;
 
     makeCurrent();
-    _renderer.setCellMorphology(cellMorphology);
+    _lineRenderer.setCellMorphology(cellMorphology);
+    _tubeRenderer.setCellMorphology(cellMorphology);
 }
 
 void MorphologyWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    _renderer.init();
+    _lineRenderer.init();
+    _tubeRenderer.init();
 
     // Start timer
     QTimer* updateTimer = new QTimer();
@@ -67,12 +70,20 @@ void MorphologyWidget::initializeGL()
 
 void MorphologyWidget::resizeGL(int w, int h)
 {
-    _renderer.resize(w, h);
+    _lineRenderer.resize(w, h);
+    _tubeRenderer.resize(w, h);
 }
 
 void MorphologyWidget::paintGL()
 {
-    _renderer.update();
+    t += 1.6f;
+
+    switch (_renderMode)
+    {
+        case RenderMode::LINE: _lineRenderer.update(t); break;
+        case RenderMode::REAL: _tubeRenderer.update(t); break;
+        default: _lineRenderer.update(t);
+    }
 
     QPainter painter(this);
 
@@ -152,6 +163,10 @@ bool MorphologyWidget::eventFilter(QObject* target, QEvent* event)
     case QEvent::MouseButtonPress:
     {
         auto mouseEvent = static_cast<QMouseEvent*>(event);
+        qDebug() << "Mouse click";
+
+        makeCurrent();
+        _tubeRenderer.reloadShaders();
 
         break;
     }

@@ -24,7 +24,9 @@ CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     _currentDatasetName(),
     _currentDatasetNameLabel(new QLabel("Cell IDs")),
     _morphologyWidget(new MorphologyWidget(this)),
-    _inputAction(this, "Dataset ID", "")
+    _inputAction(this, "Dataset ID", ""),
+    _primaryToolbarAction(this, "PrimaryToolbar"),
+    _settingsAction(this, "SettingsAction")
     //_tTypeClassAction(this, "T-Type Class", "", ""),
     //_tTypeAction(this, "T-Type", "", "")
 {
@@ -46,6 +48,18 @@ void CellMorphologyView::init()
     auto layout = new QVBoxLayout();
 
     layout->setContentsMargins(0, 0, 0, 0);
+
+    //_primaryToolbarAction.addAction(&_settingsAction.getRenderModeAction(), 4, GroupAction::Horizontal);
+    //_primaryToolbarAction.addAction(&_settingsAction.getPlotAction(), 7, GroupAction::Horizontal);
+    //_primaryToolbarAction.addAction(&_settingsAction.getPositionAction(), 10, GroupAction::Horizontal);
+    //_primaryToolbarAction.addAction(&_settingsAction.getFilterAction(), 0, GroupAction::Horizontal);
+    //_primaryToolbarAction.addAction(&_settingsAction.getOverlayAction(), 0, GroupAction::Horizontal);
+    //_primaryToolbarAction.addAction(&_settingsAction.getExportAction(), 0, GroupAction::Horizontal);
+    _primaryToolbarAction.addAction(&_settingsAction.getLineRendererButton());
+    _primaryToolbarAction.addAction(&_settingsAction.getRealRendererButton());
+
+    connect(&_settingsAction.getLineRendererButton(), &TriggerAction::triggered, this, [this]() { _morphologyWidget->setRenderMode(RenderMode::LINE); });
+    connect(&_settingsAction.getRealRendererButton(), &TriggerAction::triggered, this, [this]() { _morphologyWidget->setRenderMode(RenderMode::REAL); });
 
     // Instantiate new drop widget
     _dropWidget = new DropWidget(_currentDatasetNameLabel);
@@ -133,6 +147,7 @@ void CellMorphologyView::init()
         return dropRegions;
     });
 
+    layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
     layout->addWidget(_currentDatasetNameLabel);
     //layout->addWidget(_tTypeClassAction.createWidget(&getWidget()), 1);
     //layout->addWidget(_tTypeAction.createWidget(&getWidget()), 1);

@@ -14,12 +14,10 @@ class MorphologyLineRenderer : public MorphologyRenderer
 {
 public:
     void init() override;
-    void update() override;
+    void update(float t) override;
 
     void setCellMorphology(const CellMorphology& cellMorphology) override;
 
 private:
     mv::ShaderProgram _lineShader;
-
-    float t = 0;
 };
