@@ -13,6 +13,8 @@ void MorphologyLineRenderer::init()
     if (!loaded) {
         qCritical() << "Failed to load one of the morphology shaders";
     }
+
+    glEnable(GL_LINE_SMOOTH);
 }
 
 void MorphologyLineRenderer::setCellMorphology(const CellMorphology& cellMorphology)
