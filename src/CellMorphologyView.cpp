@@ -252,20 +252,11 @@ void CellMorphologyView::dataInputChanged(const QString& dataInput)
 
 void CellMorphologyView::onNeuronChanged()
 {
-    auto selectionDataset = _cellIdData->getSelection();
-
-    const std::vector<uint32_t>& indices = selectionDataset->getSelectionIndices();
-
-    if (indices.empty())
+    if (!_cellMetadata.isValid())
+    {
+        qWarning() << "No cell metadata dataset set.";
         return;
-
-    uint32_t cellIndex = indices[0];
-
-    std::vector<QString> cellIds = _cellIdData->getColumn("cell_id");
-    std::vector<QString> cellSubclasses = _cellIdData->getColumn("tree_subclass");
-
-    QString cellId = cellIds[cellIndex];
-    qDebug() << cellId;
+    }
 
     if (!_cellMorphologies.isValid())
     {
@@ -273,21 +264,51 @@ void CellMorphologyView::onNeuronChanged()
         return;
     }
 
-    // Get index of cell identifier
-    const QStringList& cellIdsStringList = _cellMorphologies->getCellIdentifiers();
+    auto selectionDataset = _cellMetadata->getSelection();
 
-    int cellIndex2 = cellIdsStringList.indexOf(cellId);
+    const std::vector<uint32_t>& metaIndices = selectionDataset->getSelectionIndices();
 
-    if (cellIndex2 == -1)
+    if (metaIndices.empty())
+        return;
+
+    std::vector<QString> cellIds = _cellMetadata->getColumn("Cell ID");
+    std::vector<QString> cellSubclasses = _cellMetadata->getColumn("Subclass");
+
+    // Find first cell with morphology
+    QString foundCellId;
+    uint32_t foundCellIndex = -1;
+    for (uint32_t metaIndex : metaIndices)
     {
-        qWarning() << "Failed to find cell with ID: " << cellId << " in the morphology dataset.";
+        QString cellId = cellIds[metaIndex];
+
+        // Get index of cell identifier
+        const QStringList& cellIdsWithMorphologies = _cellMorphologies->getCellIdentifiers();
+
+        int ci = cellIdsWithMorphologies.indexOf(cellId);
+
+        if (ci != -1)
+        {
+            // Found a cell with morphology
+            foundCellId = cellId;
+            foundCellIndex = ci;
+            break;
+        }
+    }
+
+    if (foundCellId.isEmpty())
+    {
+        qWarning() << "No cells were selected that have an associated morphology loaded.";
         return;
     }
-    qDebug() << "Found cell with ID: " << cellId;
+
+    uint32_t cellIndex = metaIndices[0];
+
+    qDebug() << "Found cell with ID: " << foundCellId;
+
     // Get cell morphology at index
     const std::vector<CellMorphology>& cellMorphologies = _cellMorphologies->getData();
 
-    const CellMorphology& cellMorphology = cellMorphologies[cellIndex2];
+    const CellMorphology& cellMorphology = cellMorphologies[foundCellIndex];
 
     _morphologyWidget->setCellMorphology(cellMorphology);
     _morphologyWidget->setCellMetadata(cellId, cellSubclasses[cellIndex]);
