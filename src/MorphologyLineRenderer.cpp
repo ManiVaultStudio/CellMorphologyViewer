@@ -110,7 +110,7 @@ void MorphologyLineRenderer::update(float t)
     glClear(GL_COLOR_BUFFER_BIT);
 
     mv::Vector3f centroid = _morphologyView.centroid;
-    float maxExtent = _morphologyView.maxExtent / 2;
+    float maxExtent = _morphologyView.maxExtent / 1.5f;
 
     _viewMatrix.setToIdentity();
     _viewMatrix.scale(1.0f / maxExtent);
