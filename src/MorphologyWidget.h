@@ -59,6 +59,7 @@ private:
     QPixmap _morphologyImage;
     QPixmap _evImage;
     QPixmap _wheelImage;
+    float t = 0;
 
     QString _cellId;
     QString _subclass;
