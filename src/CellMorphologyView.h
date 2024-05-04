@@ -13,7 +13,7 @@
 #include <Actions/StringAction.h>
 #include <Actions/HorizontalToolbarAction.h>
 
-//#include <PointData/PointData.h>
+#include <PointData/PointData.h>
 #include <TextData/TextData.h>
 #include <CellMorphologyData/CellMorphologyData.h>
 
@@ -72,7 +72,8 @@ private:
     HorizontalToolbarAction         _primaryToolbarAction;      /** Horizontal toolbar for primary content */
     SettingsAction                  _settingsAction;
     DropWidget*                     _dropWidget;                /** Widget for drag and drop behavior */
-    mv::Dataset<Text>               _cellIdData;                /** Points smart pointer */
+    mv::Dataset<Text>               _cellMetadata;              /** Points smart pointer */
+    mv::Dataset<Points>             _cellMorphologyData;        /** Points smart pointer */
     mv::Dataset<CellMorphologies>   _cellMorphologies;          /** Points smart pointer */
     QString                         _currentDatasetName;        /** Name of the current dataset */
     QLabel*                         _currentDatasetNameLabel;   /** Label that show the current dataset name */

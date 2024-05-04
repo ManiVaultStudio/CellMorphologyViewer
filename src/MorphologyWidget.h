@@ -3,6 +3,8 @@
 #include "MorphologyLineRenderer.h"
 #include "MorphologyTubeRenderer.h"
 
+#include "MorphologyDescription.h"
+
 #include "NeuronDescriptor.h"
 
 #include "graphics/Vector3f.h"
@@ -34,9 +36,11 @@ public:
     {
         _renderMode = renderMode;
     }
+
     void updateNeuron(NeuronDescriptor nd);
     void setCellMorphology(const CellMorphology& cellMorphology);
     void setCellMetadata(QString cellId, QString subclass) { _cellId = cellId; _subclass = subclass; }
+    void setCellMorphologyData(const MorphologyDescription& desc) { _desc = desc; }
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
@@ -56,13 +60,16 @@ private:
 
     NeuronDescriptor _nd;
 
-    QPixmap _morphologyImage;
-    QPixmap _evImage;
-    QPixmap _wheelImage;
+    //QPixmap _morphologyImage;
+    //QPixmap _evImage;
+    //QPixmap _wheelImage;
+
     float t = 0;
 
     QString _cellId;
     QString _subclass;
+
+    MorphologyDescription _desc;
 
     MorphologyLineRenderer _lineRenderer;
     MorphologyTubeRenderer _tubeRenderer;

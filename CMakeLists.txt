@@ -45,6 +45,8 @@ set(PLUGIN_SOURCES
     src/MorphologyWidget.h
     src/MorphologyWidget.cpp
     src/NeuronDescriptor.h
+    src/MorphologyDescription.h
+    src/MorphologyDescription.cpp
     src/SettingsAction.h
     src/SettingsAction.cpp
     #src/Query.h
@@ -114,10 +116,12 @@ set(MV_LINK_SUFFIX $<IF:$<CXX_COMPILER_ID:MSVC>,${CMAKE_LINK_LIBRARY_SUFFIX},${C
 
 set(MV_LINK_LIBRARY "${MV_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}MV_Public${MV_LINK_SUFFIX}")
 set(TEXTDATA_LINK_LIBRARY "${PLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}TextData${MV_LINK_SUFFIX}")
+set(POINTDATA_LINK_LIBRARY "${PLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}PointData${MV_LINK_SUFFIX}")
 set(CELL_MORPHOLOGY_DATA_LINK_LIBRARY "${PLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}CellMorphologyData${MV_LINK_SUFFIX}")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE "${MV_LINK_LIBRARY}")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${TEXTDATA_LINK_LIBRARY}")
+target_link_libraries(${PROJECT_NAME} PRIVATE "${POINTDATA_LINK_LIBRARY}")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${CELL_MORPHOLOGY_DATA_LINK_LIBRARY}")
 #target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/curl/lib/libcurl_imp.lib")
 

@@ -87,29 +87,36 @@ void MorphologyWidget::paintGL()
 
     QPainter painter(this);
 
-    QFont font = painter.font();
-    font.setPointSize(14);
-    painter.setFont(font);
-    painter.setPen(QPen(Qt::white));
-    painter.drawText(25, 60, "Cell ID: " + _cellId);
-    
-    font.setPointSize(14);
-    painter.setFont(font);
-    painter.drawText(25, 80, "Class: " + _nd.tTypeSubClass);
+    //QFont font = painter.font();
+    //font.setPointSize(14);
+    //painter.setFont(font);
+    //painter.setPen(QPen(Qt::white));
+    //painter.drawText(25, 60, "Cell ID: " + _cellId);
+    //
+    //font.setPointSize(14);
+    //painter.setFont(font);
+    //painter.drawText(25, 80, "Class: " + _nd.tTypeSubClass);
 
-    font.setPointSize(14);
-    painter.setFont(font);
-    painter.drawText(25, 100, "Subclass: " + _subclass);
+    //font.setPointSize(14);
+    //painter.setFont(font);
+    //painter.drawText(25, 100, "Subclass: " + _subclass);
 
-    font.setPointSize(14);
-    painter.setFont(font);
-    painter.drawText(25, 120, "Cortical Layer: " + _nd.corticalLayer);
+    //font.setPointSize(14);
+    //painter.setFont(font);
+    //painter.drawText(25, 120, "Cortical Layer: " + _nd.corticalLayer);
 
-    painter.drawPixmap(-30, -30, 300, 300, _wheelImage);
+    //painter.fillRect(20, 130, 200, 200, QColor(64, 64, 64));
+    //font.setPointSize(10);
+    //painter.setFont(font);
+    //painter.drawText(25, 140, "Apical Dendrite Bias X: " + QString::number(_desc.getApicalDendriteDescription().bias.x));
+    //painter.drawText(25, 155, "Num branches - " + QString::number(_desc.getApicalDendriteDescription().numBranches));
+    //painter.drawText(25, 170, QString("Extent - x:%1, y:%2").arg(_desc.getApicalDendriteDescription().extent.x).arg(_desc.getApicalDendriteDescription().extent.y));
 
-    painter.drawPixmap(0, 250, 400, 300, _morphologyImage);
+    //painter.drawPixmap(-30, -30, 300, 300, _wheelImage);
 
-    painter.drawPixmap(0, 500, 300, 300, _evImage);
+    //painter.drawPixmap(0, 250, 400, 300, _morphologyImage);
+
+    //painter.drawPixmap(0, 500, 300, 300, _evImage);
 
     painter.end();
 }
