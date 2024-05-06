@@ -19,12 +19,29 @@ Q_PLUGIN_METADATA(IID "studio.manivault.CellMorphologyView")
 
 using namespace mv;
 
+namespace
+{
+    bool isMorphologicalData(mv::Dataset<DatasetImpl> dataset)
+    {
+        return dataset->hasProperty("PatchSeqType") && dataset->getProperty("PatchSeqType").toString() == "M";
+    }
+
+    bool isMorphologies(mv::Dataset<DatasetImpl> dataset)
+    {
+        return dataset->hasProperty("PatchSeqType") && dataset->getProperty("PatchSeqType").toString() == "Morphologies";
+    }
+
+    bool isMetadata(mv::Dataset<DatasetImpl> dataset)
+    {
+        return dataset->hasProperty("PatchSeqType") && dataset->getProperty("PatchSeqType").toString() == "Metadata";
+    }
+}
+
 CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     ViewPlugin(factory),
     _dropWidget(nullptr),
     _cellMetadata(),
     _currentDatasetName(),
-    _currentDatasetNameLabel(new QLabel("Cell IDs")),
     _morphologyWidget(new MorphologyWidget(this)),
     _inputAction(this, "Dataset ID", ""),
     _primaryToolbarAction(this, "PrimaryToolbar"),
@@ -32,12 +49,6 @@ CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     //_tTypeClassAction(this, "T-Type Class", "", ""),
     //_tTypeAction(this, "T-Type", "", "")
 {
-    // This line is mandatory if drag and drop behavior is required
-    _currentDatasetNameLabel->setAcceptDrops(true);
-
-    // Align text in the center
-    _currentDatasetNameLabel->setAlignment(Qt::AlignCenter);
-
     //connect(&_inputAction, &StringAction::stringChanged, this, &CellMorphologyView::dataInputChanged);
     connect(_morphologyWidget, &MorphologyWidget::changeNeuron, this, &CellMorphologyView::onNeuronChanged);
 
@@ -63,119 +74,7 @@ void CellMorphologyView::init()
     connect(&_settingsAction.getLineRendererButton(), &TriggerAction::triggered, this, [this]() { _morphologyWidget->setRenderMode(RenderMode::LINE); });
     connect(&_settingsAction.getRealRendererButton(), &TriggerAction::triggered, this, [this]() { _morphologyWidget->setRenderMode(RenderMode::REAL); });
 
-    // Instantiate new drop widget
-    _dropWidget = new DropWidget(_currentDatasetNameLabel);
-
-    // Set the drop indicator widget (the widget that indicates that the view is eligible for data dropping)
-    _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(&getWidget(), "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
-
-    // Initialize the drop regions
-    _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
-        // A drop widget can contain zero or more drop regions
-        DropWidget::DropRegions dropRegions;
-        const auto datasetsMimeData = dynamic_cast<const DatasetsMimeData*>(mimeData);
-
-        if (datasetsMimeData == nullptr)
-            return dropRegions;
-
-        if (datasetsMimeData->getDatasets().count() > 1)
-            return dropRegions;
-
-        const auto dataset = datasetsMimeData->getDatasets().first();
-        const auto datasetGuiName = dataset->text();
-        const auto datasetId = dataset->getId();
-        const auto dataType = dataset->getDataType();
-        const auto dataTypes = DataTypes({ PointType, TextType, CellMorphologyType });
-
-        // Visually indicate if the dataset is of the wrong data type and thus cannot be dropped
-        if (!dataTypes.contains(dataType)) {
-            dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", "exclamation-circle", false);
-        }
-        else {
-            
-            // Get points dataset from the core
-            auto candidateDataset = mv::data().getDataset<Text>(datasetId);
-
-            // Accept points datasets drag and drop
-            if (dataType == TextType)
-            {
-                const auto description = QString("Load %1 into example view").arg(datasetGuiName);
-
-                if (!_cellMetadata.isValid()) {
-                    // Dataset can be dropped
-                    dropRegions << new DropWidget::DropRegion(this, "Points", description, "map-marker-alt", true, [this, candidateDataset]() {
-                        _cellMetadata = candidateDataset;
-                        qDebug() << _cellMetadata.isValid();
-                    });
-                }
-                else {
-                    if (_cellMetadata == candidateDataset) {
-                        // Dataset cannot be dropped because it is already loaded
-                        dropRegions << new DropWidget::DropRegion(this, "Warning", "Data already loaded", "exclamation-circle", false);
-                    }
-                    else {
-                        // Dataset can be dropped
-                        dropRegions << new DropWidget::DropRegion(this, "Points", description, "map-marker-alt", true, [this, candidateDataset]() {
-                            _cellMetadata = candidateDataset;
-                        });
-                    }
-                }
-            }
-            else if (dataType == PointType)
-            {
-                const auto description = QString("Load %1 into example view").arg(datasetGuiName);
-
-                if (!_cellMorphologyData.isValid()) {
-                    // Dataset can be dropped
-                    dropRegions << new DropWidget::DropRegion(this, "Points", description, "map-marker-alt", true, [this, candidateDataset]() {
-                        _cellMorphologyData = candidateDataset;
-                        qDebug() << _cellMorphologyData.isValid();
-                        });
-                }
-                else {
-                    if (_cellMorphologyData == candidateDataset) {
-                        // Dataset cannot be dropped because it is already loaded
-                        dropRegions << new DropWidget::DropRegion(this, "Warning", "Data already loaded", "exclamation-circle", false);
-                    }
-                    else {
-                        // Dataset can be dropped
-                        dropRegions << new DropWidget::DropRegion(this, "Points", description, "map-marker-alt", true, [this, candidateDataset]() {
-                            _cellMorphologyData = candidateDataset;
-                        });
-                    }
-                }
-            }
-            else if (dataType == CellMorphologyType)
-            {
-                const auto description = QString("Load %1 into cell morphology view").arg(datasetGuiName);
-
-                if (!_cellMorphologies.isValid()) {
-                    // Dataset can be dropped
-                    dropRegions << new DropWidget::DropRegion(this, "Points", description, "map-marker-alt", true, [this, candidateDataset]() {
-                        _cellMorphologies = candidateDataset;
-                        qDebug() << _cellMorphologies.isValid();
-                    });
-                }
-                else {
-                    if (_cellMorphologies == candidateDataset) {
-                        // Dataset cannot be dropped because it is already loaded
-                        dropRegions << new DropWidget::DropRegion(this, "Warning", "Data already loaded", "exclamation-circle", false);
-                    }
-                    else {
-                        // Dataset can be dropped
-                        dropRegions << new DropWidget::DropRegion(this, "Points", description, "map-marker-alt", true, [this, candidateDataset]() {
-                            _cellMorphologies = candidateDataset;
-                        });
-                    }
-                }
-            }
-        }
-
-        return dropRegions;
-    });
-
     layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
-    layout->addWidget(_currentDatasetNameLabel);
     //layout->addWidget(_tTypeClassAction.createWidget(&getWidget()), 1);
     //layout->addWidget(_tTypeAction.createWidget(&getWidget()), 1);
     layout->addWidget(_morphologyWidget, 99);
@@ -187,9 +86,6 @@ void CellMorphologyView::init()
     // Respond when the name of the dataset in the dataset reference changes
     connect(&_cellMetadata, &Dataset<Text>::guiNameChanged, this, [this]()
     {
-        // Update the current dataset name label
-        _currentDatasetNameLabel->setText(QString("Current points dataset: %1").arg(_cellMetadata->getGuiName()));
-
         // Only show the drop indicator when nothing is loaded in the dataset reference
         _dropWidget->setShowDropIndicator(_cellMetadata->getGuiName().isEmpty());
     });
@@ -199,10 +95,23 @@ void CellMorphologyView::init()
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetDataChanged));
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetRemoved));
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetDataSelectionChanged));
+    _eventListener.registerDataEventByType(PointType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
     _eventListener.registerDataEventByType(TextType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
+    _eventListener.registerDataEventByType(CellMorphologyType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
 
     //Query query;
     //_neuronList = query.send();
+
+    // Check if any usable datasets are already available, if so, use them
+    for (mv::Dataset dataset : mv::data().getAllDatasets())
+    {
+        if (isMorphologicalData(dataset))
+            _cellMorphologyData = dataset;
+        if (isMorphologies(dataset))
+            _cellMorphologies = dataset;
+        if (isMetadata(dataset))
+            _cellMetadata = dataset;
+    }
 }
 
 void CellMorphologyView::onDataEvent(mv::DatasetEvent* dataEvent)
@@ -221,6 +130,13 @@ void CellMorphologyView::onDataEvent(mv::DatasetEvent* dataEvent)
         {
             // Cast the data event to a data added event
             const auto dataAddedEvent = static_cast<DatasetAddedEvent*>(dataEvent);
+
+            if (isMorphologicalData(changedDataSet))
+                _cellMorphologyData = changedDataSet;
+            if (isMorphologies(changedDataSet))
+                _cellMorphologies = changedDataSet;
+            if (isMetadata(changedDataSet))
+                _cellMetadata = changedDataSet;
 
             // Get the GUI name of the added points dataset and print to the console
             qDebug() << datasetGuiName << "was added";

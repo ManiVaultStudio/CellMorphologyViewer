@@ -72,11 +72,12 @@ private:
     HorizontalToolbarAction         _primaryToolbarAction;      /** Horizontal toolbar for primary content */
     SettingsAction                  _settingsAction;
     DropWidget*                     _dropWidget;                /** Widget for drag and drop behavior */
-    mv::Dataset<Text>               _cellMetadata;              /** Points smart pointer */
+
     mv::Dataset<Points>             _cellMorphologyData;        /** Points smart pointer */
     mv::Dataset<CellMorphologies>   _cellMorphologies;          /** Points smart pointer */
+    mv::Dataset<Text>               _cellMetadata;              /** Points smart pointer */
+
     QString                         _currentDatasetName;        /** Name of the current dataset */
-    QLabel*                         _currentDatasetNameLabel;   /** Label that show the current dataset name */
 
     MorphologyWidget*         _morphologyWidget;
     StringAction              _inputAction;
