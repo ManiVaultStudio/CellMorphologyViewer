@@ -10,8 +10,8 @@
 
 #include <Dataset.h>
 #include <widgets/DropWidget.h>
-#include <Actions/StringAction.h>
-#include <Actions/HorizontalToolbarAction.h>
+#include <actions/StringAction.h>
+#include <actions/HorizontalToolbarAction.h>
 
 #include <PointData/PointData.h>
 #include <TextData/TextData.h>
