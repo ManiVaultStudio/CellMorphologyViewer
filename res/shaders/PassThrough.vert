@@ -24,7 +24,7 @@ void main()
     // Axon
     else if (type == 2)
     {
-        color = vec3(0.55, 0.80, 1.0);
+        color = vec3(0, 60/255.0, 125/255.0);
     }
     // Basal dendrite
     else if (type == 3)

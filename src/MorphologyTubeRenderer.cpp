@@ -253,12 +253,12 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
 void MorphologyTubeRenderer::update(float t)
 {
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0, 0, 0, 1);
+    glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     _projMatrix.setToIdentity();
     mv::Vector3f centroid = _morphologyView.centroid;
-    float maxExtent = _morphologyView.maxExtent / 2;
+    float maxExtent = _morphologyView.maxExtent / 1.5f;
 
     _projMatrix.ortho(-maxExtent * _aspectRatio, maxExtent * _aspectRatio, -maxExtent, maxExtent, -maxExtent, maxExtent);
 

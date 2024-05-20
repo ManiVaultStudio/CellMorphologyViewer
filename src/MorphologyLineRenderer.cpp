@@ -106,7 +106,7 @@ void MorphologyLineRenderer::setCellMorphology(const CellMorphology& cellMorphol
 
 void MorphologyLineRenderer::update(float t)
 {
-    glClearColor(0, 0, 0, 1);
+    glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
     mv::Vector3f centroid = _morphologyView.centroid;
