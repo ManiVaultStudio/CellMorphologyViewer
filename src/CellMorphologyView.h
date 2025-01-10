@@ -6,16 +6,14 @@
 
 #include "NeuronDescriptor.h"
 
+#include "Scene.h"
+
 #include <ViewPlugin.h>
 
 #include <Dataset.h>
 #include <widgets/DropWidget.h>
 #include <actions/StringAction.h>
 #include <actions/HorizontalToolbarAction.h>
-
-#include <PointData/PointData.h>
-#include <TextData/TextData.h>
-#include <CellMorphologyData/CellMorphologyData.h>
 
 #include <QWidget>
 
@@ -73,11 +71,7 @@ private:
     SettingsAction                  _settingsAction;
     DropWidget*                     _dropWidget;                /** Widget for drag and drop behavior */
 
-    mv::Dataset<Points>             _cellMorphologyData;        /** Points smart pointer */
-    mv::Dataset<CellMorphologies>   _cellMorphologies;          /** Points smart pointer */
-    mv::Dataset<Text>               _cellMetadata;              /** Points smart pointer */
-
-    QString                         _currentDatasetName;        /** Name of the current dataset */
+    Scene                           _scene;
 
     MorphologyWidget*         _morphologyWidget;
     StringAction              _inputAction;

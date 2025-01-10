@@ -9,48 +9,48 @@
 #include <QtMath>
 
 std::vector<mv::Vector3f> sphereVertices = {
-    mv::Vector3f(0.000000, -1.000000, 0.000000),
-    mv::Vector3f(0.723607, -0.447220, 0.525725),
-    mv::Vector3f(-0.276388, -0.447220, 0.850649),
-    mv::Vector3f(-0.894426, -0.447216, 0.000000),
-    mv::Vector3f(-0.276388, -0.447220, -0.850649),
-    mv::Vector3f(0.723607, -0.447220, -0.525725),
-    mv::Vector3f(0.276388, 0.447220, 0.850649),
-    mv::Vector3f(-0.723607, 0.447220, 0.525725),
-    mv::Vector3f(-0.723607, 0.447220, -0.525725),
-    mv::Vector3f(0.276388, 0.447220, -0.850649),
-    mv::Vector3f(0.894426, 0.447216, 0.000000),
-    mv::Vector3f(0.000000, 1.000000, 0.000000),
-    mv::Vector3f(-0.162456, -0.850654, 0.499995),
-    mv::Vector3f(0.425323, -0.850654, 0.309011),
-    mv::Vector3f(0.262869, -0.525738, 0.809012),
-    mv::Vector3f(0.850648, -0.525736, 0.000000),
-    mv::Vector3f(0.425323, -0.850654, -0.309011),
-    mv::Vector3f(-0.525730, -0.850652, 0.000000),
-    mv::Vector3f(-0.688189, -0.525736, 0.499997),
-    mv::Vector3f(-0.162456, -0.850654, -0.499995),
-    mv::Vector3f(-0.688189, -0.525736, -0.499997),
-    mv::Vector3f(0.262869, -0.525738, -0.809012),
-    mv::Vector3f(0.951058, 0.000000, 0.309013),
-    mv::Vector3f(0.951058, 0.000000, -0.309013),
-    mv::Vector3f(0.000000, 0.000000, 1.000000),
-    mv::Vector3f(0.587786, 0.000000, 0.809017),
-    mv::Vector3f(-0.951058, 0.000000, 0.309013),
-    mv::Vector3f(-0.587786, 0.000000, 0.809017),
-    mv::Vector3f(-0.587786, 0.000000, -0.809017),
-    mv::Vector3f(-0.951058, 0.000000, -0.309013),
-    mv::Vector3f(0.587786, 0.000000, -0.809017),
-    mv::Vector3f(0.000000, 0.000000, -1.000000),
-    mv::Vector3f(0.688189, 0.525736, 0.499997),
-    mv::Vector3f(-0.262869, 0.525738, 0.809012),
-    mv::Vector3f(-0.850648, 0.525736, 0.000000),
-    mv::Vector3f(-0.262869, 0.525738, -0.809012),
-    mv::Vector3f(0.688189, 0.525736, -0.499997),
-    mv::Vector3f(0.162456, 0.850654, 0.499995),
-    mv::Vector3f(0.525730, 0.850652, 0.000000),
-    mv::Vector3f(-0.425323, 0.850654, 0.309011),
-    mv::Vector3f(-0.425323, 0.850654, -0.309011),
-    mv::Vector3f(0.162456, 0.850654, -0.499995)
+    mv::Vector3f(0.000000f, -1.000000f, 0.000000f),
+    mv::Vector3f(0.723607f, -0.447220f, 0.525725f),
+    mv::Vector3f(-0.276388f, -0.447220f, 0.850649f),
+    mv::Vector3f(-0.894426f, -0.447216f, 0.000000f),
+    mv::Vector3f(-0.276388f, -0.447220f, -0.850649f),
+    mv::Vector3f(0.723607f, -0.447220f, -0.525725f),
+    mv::Vector3f(0.276388f, 0.447220f, 0.850649f),
+    mv::Vector3f(-0.723607f, 0.447220f, 0.525725f),
+    mv::Vector3f(-0.723607f, 0.447220f, -0.525725f),
+    mv::Vector3f(0.276388f, 0.447220f, -0.850649f),
+    mv::Vector3f(0.894426f, 0.447216f, 0.000000f),
+    mv::Vector3f(0.000000f, 1.000000f, 0.000000f),
+    mv::Vector3f(-0.162456f, -0.850654f, 0.499995f),
+    mv::Vector3f(0.425323f, -0.850654f, 0.309011f),
+    mv::Vector3f(0.262869f, -0.525738f, 0.809012f),
+    mv::Vector3f(0.850648f, -0.525736f, 0.000000f),
+    mv::Vector3f(0.425323f, -0.850654f, -0.309011f),
+    mv::Vector3f(-0.525730f, -0.850652f, 0.000000f),
+    mv::Vector3f(-0.688189f, -0.525736f, 0.499997f),
+    mv::Vector3f(-0.162456f, -0.850654f, -0.499995f),
+    mv::Vector3f(-0.688189f, -0.525736f, -0.499997f),
+    mv::Vector3f(0.262869f, -0.525738f, -0.809012f),
+    mv::Vector3f(0.951058f, 0.000000f, 0.309013f),
+    mv::Vector3f(0.951058f, 0.000000f, -0.309013f),
+    mv::Vector3f(0.000000f, 0.000000f, 1.000000f),
+    mv::Vector3f(0.587786f, 0.000000f, 0.809017f),
+    mv::Vector3f(-0.951058f, 0.000000f, 0.309013f),
+    mv::Vector3f(-0.587786f, 0.000000f, 0.809017f),
+    mv::Vector3f(-0.587786f, 0.000000f, -0.809017f),
+    mv::Vector3f(-0.951058f, 0.000000f, -0.309013f),
+    mv::Vector3f(0.587786f, 0.000000f, -0.809017f),
+    mv::Vector3f(0.000000f, 0.000000f, -1.000000f),
+    mv::Vector3f(0.688189f, 0.525736f, 0.499997f),
+    mv::Vector3f(-0.262869f, 0.525738f, 0.809012f),
+    mv::Vector3f(-0.850648f, 0.525736f, 0.000000f),
+    mv::Vector3f(-0.262869f, 0.525738f, -0.809012f),
+    mv::Vector3f(0.688189f, 0.525736f, -0.499997f),
+    mv::Vector3f(0.162456f, 0.850654f, 0.499995f),
+    mv::Vector3f(0.525730f, 0.850652f, 0.000000f),
+    mv::Vector3f(-0.425323f, 0.850654f, 0.309011f),
+    mv::Vector3f(-0.425323f, 0.850654f, -0.309011f),
+    mv::Vector3f(0.162456f, 0.850654f, -0.499995f)
 };
 
 std::vector<int> sphereFaces = {
@@ -70,7 +70,45 @@ void MorphologyTubeRenderer::init()
     }
 }
 
-void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphology)
+void MorphologyTubeRenderer::render(int index, float t)
+{
+    glEnable(GL_DEPTH_TEST);
+
+    CellRenderObject& cellRenderObject = _cellRenderObjects[index];
+
+    _projMatrix.setToIdentity();
+    mv::Vector3f centroid = _morphologyView.centroid;
+    float maxExtent = _morphologyView.maxExtent / 1.5f;
+
+    _projMatrix.ortho(-maxExtent * _aspectRatio, maxExtent * _aspectRatio, -maxExtent, maxExtent, -maxExtent, maxExtent);
+
+    _viewMatrix.setToIdentity();
+    _viewMatrix.rotate(t, 0, 1, 0);
+    _viewMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
+
+    _shader.bind();
+    _shader.uniformMatrix4f("projMatrix", _projMatrix.constData());
+    _shader.uniformMatrix4f("viewMatrix", _viewMatrix.constData());
+
+    glBindVertexArray(_morphologyView.vao);
+    glDrawArrays(GL_TRIANGLES, 0, _morphologyView.numVertices);
+    glBindVertexArray(0);
+
+    _shader.release();
+}
+
+void MorphologyTubeRenderer::reloadShaders()
+{
+    // Load shaders
+    bool loaded = true;
+    loaded &= _shader.loadShaderFromFile(":shaders/Model.vert", ":shaders/Tubes.frag");
+
+    if (!loaded) {
+        qCritical() << "Failed to load one of the morphology shaders";
+    }
+}
+
+void MorphologyTubeRenderer::buildRenderObject(const CellMorphology& cellMorphology, CellRenderObject& cellRenderObject)
 {
     mv::Vector3f                somaPosition;
     float                       somaRadius;
@@ -208,82 +246,41 @@ void MorphologyTubeRenderer::setCellMorphology(const CellMorphology& cellMorphol
     }
 
     // Initialize VAO and VBOs
-    MorphologyView morphView;
-    glGenVertexArrays(1, &morphView.vao);
-    glBindVertexArray(morphView.vao);
+    glGenVertexArrays(1, &cellRenderObject.vao);
+    glBindVertexArray(cellRenderObject.vao);
 
-    glGenBuffers(1, &morphView.vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, morphView.vbo);
+    glGenBuffers(1, &cellRenderObject.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
-    //glGenBuffers(1, &morphView.rbo);
-    //glBindBuffer(GL_ARRAY_BUFFER, morphView.rbo);
+    //glGenBuffers(1, &cellRenderObject.rbo);
+    //glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.rbo);
     //glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, 0);
     //glEnableVertexAttribArray(1);
 
-    glGenBuffers(1, &morphView.tbo);
-    glBindBuffer(GL_ARRAY_BUFFER, morphView.tbo);
+    glGenBuffers(1, &cellRenderObject.tbo);
+    glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.tbo);
     glVertexAttribIPointer(2, 1, GL_INT, 0, 0);
     glEnableVertexAttribArray(2);
 
     // Store data on GPU
-    glBindVertexArray(morphView.vao);
+    glBindVertexArray(cellRenderObject.vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, morphView.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.vbo);
     glBufferData(GL_ARRAY_BUFFER, allTubeVertices.size() * sizeof(mv::Vector3f), allTubeVertices.data(), GL_STATIC_DRAW);
 
-    //glBindBuffer(GL_ARRAY_BUFFER, morphView.rbo);
+    //glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.rbo);
     //glBufferData(GL_ARRAY_BUFFER, segmentRadii.size() * sizeof(float), segmentRadii.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, morphView.tbo);
+    glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.tbo);
     glBufferData(GL_ARRAY_BUFFER, types.size() * sizeof(int), types.data(), GL_STATIC_DRAW);
 
-    morphView.numVertices = allTubeVertices.size();
-    qDebug() << ">>>>>>>>>>>>>>>>>>>>> Num vertices: " << morphView.numVertices;
+    cellRenderObject.numVertices = allTubeVertices.size();
+    qDebug() << ">>>>>>>>>>>>>>>>>>>>> Num vertices: " << cellRenderObject.numVertices;
 
-    morphView.centroid = somaPosition;
+    cellRenderObject.centroid = somaPosition;
     mv::Vector3f range = cellMorphology.maxRange - cellMorphology.minRange;
     float maxExtent = std::max(std::max(range.x, range.y), range.z);
-    morphView.maxExtent = maxExtent;
-
-    _morphologyView = morphView;
-}
-
-void MorphologyTubeRenderer::update(float t)
-{
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(1, 1, 1, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    _projMatrix.setToIdentity();
-    mv::Vector3f centroid = _morphologyView.centroid;
-    float maxExtent = _morphologyView.maxExtent / 1.5f;
-
-    _projMatrix.ortho(-maxExtent * _aspectRatio, maxExtent * _aspectRatio, -maxExtent, maxExtent, -maxExtent, maxExtent);
-
-    _viewMatrix.setToIdentity();
-    _viewMatrix.rotate(t, 0, 1, 0);
-    _viewMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
-    
-    _shader.bind();
-    _shader.uniformMatrix4f("projMatrix", _projMatrix.constData());
-    _shader.uniformMatrix4f("viewMatrix", _viewMatrix.constData());
-
-    glBindVertexArray(_morphologyView.vao);
-    glDrawArrays(GL_TRIANGLES, 0, _morphologyView.numVertices);
-    glBindVertexArray(0);
-
-    _shader.release();
-}
-
-void MorphologyTubeRenderer::reloadShaders()
-{
-    // Load shaders
-    bool loaded = true;
-    loaded &= _shader.loadShaderFromFile(":shaders/Model.vert", ":shaders/Tubes.frag");
-
-    if (!loaded) {
-        qCritical() << "Failed to load one of the morphology shaders";
-    }
+    cellRenderObject.maxExtent = maxExtent;
 }

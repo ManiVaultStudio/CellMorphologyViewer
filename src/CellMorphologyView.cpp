@@ -40,9 +40,8 @@ namespace
 CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     ViewPlugin(factory),
     _dropWidget(nullptr),
-    _cellMetadata(),
-    _currentDatasetName(),
-    _morphologyWidget(new MorphologyWidget(this)),
+    _scene(),
+    _morphologyWidget(new MorphologyWidget(this, &_scene)),
     _inputAction(this, "Dataset ID", ""),
     _primaryToolbarAction(this, "PrimaryToolbar"),
     _settingsAction(this, "SettingsAction")
@@ -52,7 +51,7 @@ CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     //connect(&_inputAction, &StringAction::stringChanged, this, &CellMorphologyView::dataInputChanged);
     connect(_morphologyWidget, &MorphologyWidget::changeNeuron, this, &CellMorphologyView::onNeuronChanged);
 
-    connect(&_cellMetadata, &Dataset<Text>::changed, this, &CellMorphologyView::onCellIdDatasetChanged);
+    connect(&_scene._cellMetadata, &Dataset<Text>::changed, this, &CellMorphologyView::onCellIdDatasetChanged);
 }
 
 void CellMorphologyView::init()
@@ -62,12 +61,6 @@ void CellMorphologyView::init()
 
     layout->setContentsMargins(0, 0, 0, 0);
 
-    //_primaryToolbarAction.addAction(&_settingsAction.getRenderModeAction(), 4, GroupAction::Horizontal);
-    //_primaryToolbarAction.addAction(&_settingsAction.getPlotAction(), 7, GroupAction::Horizontal);
-    //_primaryToolbarAction.addAction(&_settingsAction.getPositionAction(), 10, GroupAction::Horizontal);
-    //_primaryToolbarAction.addAction(&_settingsAction.getFilterAction(), 0, GroupAction::Horizontal);
-    //_primaryToolbarAction.addAction(&_settingsAction.getOverlayAction(), 0, GroupAction::Horizontal);
-    //_primaryToolbarAction.addAction(&_settingsAction.getExportAction(), 0, GroupAction::Horizontal);
     _primaryToolbarAction.addAction(&_settingsAction.getLineRendererButton());
     _primaryToolbarAction.addAction(&_settingsAction.getRealRendererButton());
 
@@ -84,10 +77,10 @@ void CellMorphologyView::init()
     getWidget().setLayout(layout);
 
     // Respond when the name of the dataset in the dataset reference changes
-    connect(&_cellMetadata, &Dataset<Text>::guiNameChanged, this, [this]()
+    connect(&_scene._cellMetadata, &Dataset<Text>::guiNameChanged, this, [this]()
     {
         // Only show the drop indicator when nothing is loaded in the dataset reference
-        _dropWidget->setShowDropIndicator(_cellMetadata->getGuiName().isEmpty());
+        _dropWidget->setShowDropIndicator(_scene._cellMetadata->getGuiName().isEmpty());
     });
 
     // Alternatively, classes which derive from hdsp::EventListener (all plugins do) can also respond to events
@@ -106,11 +99,11 @@ void CellMorphologyView::init()
     for (mv::Dataset dataset : mv::data().getAllDatasets())
     {
         if (isMorphologicalData(dataset))
-            _cellMorphologyData = dataset;
+            _scene._cellMorphologyData = dataset;
         if (isMorphologies(dataset))
-            _cellMorphologies = dataset;
+            _scene._cellMorphologies = dataset;
         if (isMetadata(dataset))
-            _cellMetadata = dataset;
+            _scene._cellMetadata = dataset;
     }
 }
 
@@ -132,12 +125,14 @@ void CellMorphologyView::onDataEvent(mv::DatasetEvent* dataEvent)
             const auto dataAddedEvent = static_cast<DatasetAddedEvent*>(dataEvent);
 
             if (isMorphologicalData(changedDataSet))
-                _cellMorphologyData = changedDataSet;
+                _scene._cellMorphologyData = changedDataSet;
             if (isMorphologies(changedDataSet))
-                _cellMorphologies = changedDataSet;
+                _scene._cellMorphologies = changedDataSet;
             if (isMetadata(changedDataSet))
-                _cellMetadata = changedDataSet;
-
+                _scene._cellMetadata = changedDataSet;
+            qDebug() << _scene._cellMorphologyData.isValid();
+            qDebug() << _scene._cellMorphologies.isValid();
+            qDebug() << _scene._cellMetadata.isValid();
             // Get the GUI name of the added points dataset and print to the console
             qDebug() << datasetGuiName << "was added";
 
@@ -151,7 +146,7 @@ void CellMorphologyView::onDataEvent(mv::DatasetEvent* dataEvent)
             const auto dataChangedEvent = static_cast<DatasetDataChangedEvent*>(dataEvent);
 
             // Get the name of the points dataset of which the data changed and print to the console
-            qDebug() << datasetGuiName << "data changed";
+            //qDebug() << datasetGuiName << "data changed";
 
             break;
         }
@@ -178,7 +173,7 @@ void CellMorphologyView::onDataEvent(mv::DatasetEvent* dataEvent)
             const auto& selectionSet = changedDataSet->getSelection<Text>();
 
             // Print to the console
-            qDebug() << datasetGuiName << "selection has changed";
+            //qDebug() << datasetGuiName << "selection has changed";
 
             break;
         }
@@ -195,111 +190,133 @@ void CellMorphologyView::dataInputChanged(const QString& dataInput)
 
 void CellMorphologyView::onNeuronChanged()
 {
-    if (!_cellMetadata.isValid())
+    if (!_scene._cellMetadata.isValid())
     {
         qWarning() << "No cell metadata dataset set.";
         return;
     }
 
-    if (!_cellMorphologies.isValid())
+    if (!_scene._cellMorphologies.isValid())
     {
-        qWarning() << "No cell morphology dataset set.";
+        qWarning() << "No cell morphology dataset found by CellMorphologyViewer.";
         return;
     }
 
-    auto selectionDataset = _cellMetadata->getSelection();
+    const auto& selectionIndices = _scene._cellMorphologies->getSelectionIndices();
+    qDebug() << "Selection indices morph: " << selectionIndices.size();
+    qDebug() << "Selection indices morph2: " << _scene._cellMorphologies->getSelection()->getSelectionIndices().size();
 
-    const std::vector<uint32_t>& metaIndices = selectionDataset->getSelectionIndices();
-
-    if (metaIndices.empty())
-        return;
-
-    std::vector<QString> cellIds = _cellMetadata->getColumn("Cell ID");
-    std::vector<QString> cellSubclasses = _cellMetadata->getColumn("Subclass");
-
-    // Find first cell with morphology
-    QString foundCellId;
-    uint32_t foundCellIndex = -1;
-    for (uint32_t metaIndex : metaIndices)
-    {
-        QString cellId = cellIds[metaIndex];
-
-        // Get index of cell identifier
-        const QStringList& cellIdsWithMorphologies = _cellMorphologies->getCellIdentifiers();
-
-        int ci = cellIdsWithMorphologies.indexOf(cellId);
-
-        if (ci != -1)
-        {
-            // Found a cell with morphology
-            foundCellId = cellId;
-            foundCellIndex = ci;
-            break;
-        }
-    }
-
-    if (foundCellId.isEmpty())
-    {
-        qWarning() << "No cells were selected that have an associated morphology loaded.";
-        return;
-    }
-
-    uint32_t cellIndex = metaIndices[0];
-
-    qDebug() << "Found cell with ID: " << foundCellId;
-
-    // Get cell morphology at index
-    const std::vector<CellMorphology>& cellMorphologies = _cellMorphologies->getData();
-
-    const CellMorphology& cellMorphology = cellMorphologies[foundCellIndex];
-
+    CellMorphology cellMorphology;
     _morphologyWidget->setCellMorphology(cellMorphology);
-    _morphologyWidget->setCellMetadata(foundCellId, cellSubclasses[cellIndex]);
 
-    // Check if any cell morphology data is loaded
-    if (!_cellMorphologyData.isValid())
-    {
-        qWarning() << "No cell morphology data dataset set.";
-        return;
-    }
+    return;
 
-    // Provide additional cell morphological feature
-    const std::vector<uint32_t>& cmdIndices = _cellMorphologyData->getSelectionIndices();
+    //const QStringList& cellIdsWithMorphologies = _scene._cellMorphologies->getCellIdentifiers();
 
-    if (cmdIndices.empty())
-        return;
+    //const auto& selectionIndices = _scene._cellMorphologies->getSelectionIndices();
 
-    uint32_t cmdIndex = cmdIndices[0];
+    //for (int i = 0; i < selectionIndices.size(); i++)
+    //{
+    //    _morphologyWidget->set
+    //}
 
-    size_t index = cmdIndex * _cellMorphologyData->getNumDimensions();
 
-    _cellMorphologyData->getDimensionNames();
 
-    std::vector<float> values(_cellMorphologyData->getNumDimensions());
-    for (int i = 0; i < values.size(); i++)
-    {
-        values[i] = _cellMorphologyData->getValueAt(index + i);
-    }
+    //////////////
+    //auto selectionDataset = _scene._cellMetadata->getSelection();
 
-    qDebug() << "apical_dendrite_bias_x" << _cellMorphologyData->getValueAt(index);
+    //const std::vector<uint32_t>& metaIndices = selectionDataset->getSelectionIndices();
 
-    MorphologyDescription morphDescription;
-    morphDescription.setData(_cellMorphologyData->getDimensionNames(), values);
+    //if (metaIndices.empty())
+    //    return;
 
-    _morphologyWidget->setCellMorphologyData(morphDescription);
-    qDebug() << morphDescription.getApicalDendriteDescription().bias.x;
+    //std::vector<QString> cellIds = _scene._cellMetadata->getColumn("Cell ID");
+    //std::vector<QString> cellSubclasses = _scene._cellMetadata->getColumn("Subclass");
+
+    //// Find first cell with morphology
+    //QString foundCellId;
+    //uint32_t foundCellIndex = -1;
+    //for (uint32_t metaIndex : metaIndices)
+    //{
+    //    QString cellId = cellIds[metaIndex];
+
+    //    // Get index of cell identifier
+    //    const QStringList& cellIdsWithMorphologies = _scene._cellMorphologies->getCellIdentifiers();
+
+    //    int ci = cellIdsWithMorphologies.indexOf(cellId);
+
+    //    if (ci != -1)
+    //    {
+    //        // Found a cell with morphology
+    //        foundCellId = cellId;
+    //        foundCellIndex = ci;
+    //        break;
+    //    }
+    //}
+
+    //if (foundCellId.isEmpty())
+    //{
+    //    qWarning() << "No cells were selected that have an associated morphology loaded.";
+    //    return;
+    //}
+
+    //uint32_t cellIndex = metaIndices[0];
+
+    //qDebug() << "Found cell with ID: " << foundCellId;
+
+    //// Get cell morphology at index
+    //const std::vector<CellMorphology>& cellMorphologies = _scene._cellMorphologies->getData();
+
+    //const CellMorphology& cellMorphology = cellMorphologies[foundCellIndex];
+
+    //_morphologyWidget->setCellMorphology(cellMorphology);
+    //_morphologyWidget->setCellMetadata(foundCellId, cellSubclasses[cellIndex]);
+
+    //// Check if any cell morphology data is loaded
+    //if (!_scene._cellMorphologyData.isValid())
+    //{
+    //    qWarning() << "No cell morphology data dataset set.";
+    //    return;
+    //}
+
+    //// Provide additional cell morphological feature
+    //const std::vector<uint32_t>& cmdIndices = _scene._cellMorphologyData->getSelectionIndices();
+
+    //if (cmdIndices.empty())
+    //    return;
+
+    //uint32_t cmdIndex = cmdIndices[0];
+
+    //size_t index = cmdIndex * _scene._cellMorphologyData->getNumDimensions();
+
+    //_scene._cellMorphologyData->getDimensionNames();
+
+    //std::vector<float> values(_scene._cellMorphologyData->getNumDimensions());
+    //for (int i = 0; i < values.size(); i++)
+    //{
+    //    values[i] = _scene._cellMorphologyData->getValueAt(index + i);
+    //}
+
+    //qDebug() << "apical_dendrite_bias_x" << _scene._cellMorphologyData->getValueAt(index);
+
+    //MorphologyDescription morphDescription;
+    //morphDescription.setData(_scene._cellMorphologyData->getDimensionNames(), values);
+
+    //_morphologyWidget->setCellMorphologyData(morphDescription);
+    //qDebug() << morphDescription.getApicalDendriteDescription().bias.x;
 }
 
 void CellMorphologyView::onCellIdDatasetChanged()
 {
-    connect(&_cellMetadata, &Dataset<Text>::dataSelectionChanged, this, &CellMorphologyView::onCellSelectionChanged);
+    connect(&_scene._cellMetadata, &Dataset<Text>::dataSelectionChanged, this, &CellMorphologyView::onCellSelectionChanged);
 }
 
 void CellMorphologyView::onCellSelectionChanged()
 {
-    if (!_cellMetadata.isValid())
+    qDebug() << "onCellSelectionChanged()";
+    if (!_scene._cellMetadata.isValid())
         return;
-
+    qDebug() << "Metadata selection size: " << _scene._cellMetadata->getSelection()->getSelectionIndices().size();
     onNeuronChanged();
 }
 

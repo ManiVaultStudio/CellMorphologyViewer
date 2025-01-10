@@ -2,6 +2,7 @@
 
 uniform mat4 projMatrix;
 uniform mat4 viewMatrix;
+uniform mat4 modelMatrix;
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in float radius;
@@ -39,5 +40,5 @@ void main()
 
     pass_color = color;
 
-    gl_Position = projMatrix * viewMatrix * vec4(position, 1);
+    gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(position, 1);
 }

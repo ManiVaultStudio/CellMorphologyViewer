@@ -41,6 +41,9 @@ set(PLUGIN_SOURCES
     src/MorphologyDescription.cpp
     src/SettingsAction.h
     src/SettingsAction.cpp
+    src/Scene.h
+    src/Scene.cpp
+    src/LRUCache.h
     #src/Query.h
     #src/Query.cpp
     #src/ImageQuery.h

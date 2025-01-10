@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Scene.h"
+
 #include "MorphologyLineRenderer.h"
 #include "MorphologyTubeRenderer.h"
 
@@ -29,7 +31,7 @@ class MorphologyWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
 public:
-    MorphologyWidget(CellMorphologyView* plugin);
+    MorphologyWidget(CellMorphologyView* plugin, Scene* scene);
     ~MorphologyWidget();
 
     void setRenderMode(RenderMode renderMode)
@@ -41,6 +43,8 @@ public:
     void setCellMorphology(const CellMorphology& cellMorphology);
     void setCellMetadata(QString cellId, QString subclass) { _cellId = cellId; _subclass = subclass; }
     void setCellMorphologyData(const MorphologyDescription& desc) { _desc = desc; }
+
+    void renderCell(int index);
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
@@ -57,6 +61,8 @@ signals:
 
 private:
     bool isInitialized = false;
+
+    Scene* _scene;
 
     NeuronDescriptor _nd;
 

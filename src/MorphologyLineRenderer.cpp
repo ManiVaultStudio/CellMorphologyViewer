@@ -17,7 +17,55 @@ void MorphologyLineRenderer::init()
     glEnable(GL_LINE_SMOOTH);
 }
 
-void MorphologyLineRenderer::setCellMorphology(const CellMorphology& cellMorphology)
+void MorphologyLineRenderer::render(int index, float t)
+{
+    glClearColor(1, 1, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    _lineShader.bind();
+
+    float xOffset = 0;
+
+    float totalWidth = 0;
+    for (int i = 0; i < _cellRenderObjects.size(); i++)
+    {
+        CellRenderObject& cellRenderObject = _cellRenderObjects[i];
+        totalWidth += cellRenderObject.maxExtent;
+    }
+    qDebug() << "Total width: " << totalWidth;
+    //_projMatrix.setToIdentity();
+    //_projMatrix.ortho(-_aspectRatio, _aspectRatio, -1, 1, -1, 1);
+
+    for (int i = 0; i < _cellRenderObjects.size(); i++)
+    {
+        CellRenderObject& cellRenderObject = _cellRenderObjects[i];
+
+        mv::Vector3f centroid = cellRenderObject.centroid;
+        float maxExtent = cellRenderObject.maxExtent;//
+
+        _viewMatrix.setToIdentity();
+        _viewMatrix.scale((_aspectRatio*2) / totalWidth);
+        
+        _modelMatrix.setToIdentity();
+        _modelMatrix.translate(-totalWidth/2 + maxExtent/2 + xOffset, 0, 0);
+        _modelMatrix.rotate(t, 0, 1, 0);
+        _modelMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
+
+        _lineShader.uniformMatrix4f("projMatrix", _projMatrix.constData());
+        _lineShader.uniformMatrix4f("viewMatrix", _viewMatrix.constData());
+        _lineShader.uniformMatrix4f("modelMatrix", _modelMatrix.constData());
+
+        glBindVertexArray(cellRenderObject.vao);
+        glDrawArrays(GL_LINES, 0, cellRenderObject.numVertices);
+        glBindVertexArray(0);
+
+        xOffset += maxExtent;
+    }
+
+    _lineShader.release();
+}
+
+void MorphologyLineRenderer::buildRenderObject(const CellMorphology& cellMorphology, CellRenderObject& cellRenderObject)
 {
     MorphologyLineSegments lineSegments;
 
@@ -63,67 +111,43 @@ void MorphologyLineRenderer::setCellMorphology(const CellMorphology& cellMorphol
     }
 
     // Initialize VAO and VBOs
-    MorphologyView morphView;
-    glGenVertexArrays(1, &morphView.vao);
-    glBindVertexArray(morphView.vao);
+    glGenVertexArrays(1, &cellRenderObject.vao);
+    glBindVertexArray(cellRenderObject.vao);
 
-    glGenBuffers(1, &morphView.vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, morphView.vbo);
+    glGenBuffers(1, &cellRenderObject.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
-    glGenBuffers(1, &morphView.rbo);
-    glBindBuffer(GL_ARRAY_BUFFER, morphView.rbo);
+    glGenBuffers(1, &cellRenderObject.rbo);
+    glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.rbo);
     glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(1);
 
-    glGenBuffers(1, &morphView.tbo);
-    glBindBuffer(GL_ARRAY_BUFFER, morphView.tbo);
+    glGenBuffers(1, &cellRenderObject.tbo);
+    glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.tbo);
     glVertexAttribIPointer(2, 1, GL_INT, 0, 0);
     glEnableVertexAttribArray(2);
 
     // Store data on GPU
-    glBindVertexArray(morphView.vao);
+    glBindVertexArray(cellRenderObject.vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, morphView.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.vbo);
     glBufferData(GL_ARRAY_BUFFER, lineSegments.segments.size() * sizeof(mv::Vector3f), lineSegments.segments.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, morphView.rbo);
+    qDebug() << "VBO size: " << (lineSegments.segments.size() * sizeof(mv::Vector3f)) / 1000 << "kb";
+    glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.rbo);
     glBufferData(GL_ARRAY_BUFFER, lineSegments.segmentRadii.size() * sizeof(float), lineSegments.segmentRadii.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, morphView.tbo);
+    qDebug() << "RBO size: " << (lineSegments.segmentRadii.size() * sizeof(float)) / 1000 << "kb";
+    glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.tbo);
     glBufferData(GL_ARRAY_BUFFER, lineSegments.segmentTypes.size() * sizeof(int), lineSegments.segmentTypes.data(), GL_STATIC_DRAW);
+    qDebug() << "TBO size: " << (lineSegments.segmentTypes.size() * sizeof(int)) / 1000 << "kb";
 
-    morphView.numVertices = lineSegments.segments.size();
+    cellRenderObject.numVertices = lineSegments.segments.size();
 
-    morphView.centroid = somaPosition;
+    cellRenderObject.centroid = somaPosition;
     mv::Vector3f range = cellMorphology.maxRange - cellMorphology.minRange;
     float maxExtent = std::max(std::max(range.x, range.y), range.z);
-    morphView.maxExtent = maxExtent;
+    cellRenderObject.maxExtent = maxExtent;
 
-    _morphologyView = morphView;
-}
-
-void MorphologyLineRenderer::update(float t)
-{
-    glClearColor(1, 1, 1, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    mv::Vector3f centroid = _morphologyView.centroid;
-    float maxExtent = _morphologyView.maxExtent / 1.5f;
-
-    _viewMatrix.setToIdentity();
-    _viewMatrix.scale(1.0f / maxExtent);
-    _viewMatrix.rotate(t, 0, 1, 0);
-    _viewMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
-
-    _lineShader.bind();
-    _lineShader.uniformMatrix4f("projMatrix", _projMatrix.constData());
-    _lineShader.uniformMatrix4f("viewMatrix", _viewMatrix.constData());
-
-    glBindVertexArray(_morphologyView.vao);
-    glDrawArrays(GL_LINES, 0, _morphologyView.numVertices);
-    glBindVertexArray(0);
-
-    _lineShader.release();
+    _morphologyView = cellRenderObject;
 }

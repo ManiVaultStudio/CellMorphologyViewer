@@ -17,8 +17,11 @@
 
 using namespace mv;
 
-MorphologyWidget::MorphologyWidget(CellMorphologyView* plugin) :
-    _renderMode(RenderMode::LINE)
+MorphologyWidget::MorphologyWidget(CellMorphologyView* plugin, Scene* scene) :
+    _renderMode(RenderMode::LINE),
+    _scene(scene),
+    _lineRenderer(scene),
+    _tubeRenderer(scene)
 {
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
@@ -33,7 +36,7 @@ MorphologyWidget::MorphologyWidget(CellMorphologyView* plugin) :
     surfaceFormat.setVersion(4, 3);
     surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
     surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    surfaceFormat.setSamples(16);
+    surfaceFormat.setSamples(64);
 
     setFormat(surfaceFormat);
 }
@@ -49,8 +52,10 @@ void MorphologyWidget::setCellMorphology(const CellMorphology& cellMorphology)
         return;
 
     makeCurrent();
-    _lineRenderer.setCellMorphology(cellMorphology);
-    _tubeRenderer.setCellMorphology(cellMorphology);
+    _lineRenderer.buildRenderObjects();
+    //makeCurrent();
+    //_lineRenderer.setCellMorphology(cellMorphology);
+    //_tubeRenderer.setCellMorphology(cellMorphology);
 }
 
 void MorphologyWidget::initializeGL()
@@ -63,7 +68,7 @@ void MorphologyWidget::initializeGL()
     // Start timer
     QTimer* updateTimer = new QTimer();
     QObject::connect(updateTimer, &QTimer::timeout, this, [this]() { update(); });
-    updateTimer->start(50);
+    updateTimer->start(1000.0f / 60);
 
     isInitialized = true;
 }
@@ -74,16 +79,33 @@ void MorphologyWidget::resizeGL(int w, int h)
     _tubeRenderer.resize(w, h);
 }
 
-void MorphologyWidget::paintGL()
+void MorphologyWidget::renderCell(int index)
 {
-    t += 1.6f;
-
     switch (_renderMode)
     {
-        case RenderMode::LINE: _lineRenderer.update(t); break;
-        case RenderMode::REAL: _tubeRenderer.update(t); break;
-        default: _lineRenderer.update(t);
+    case RenderMode::LINE: _lineRenderer.render(index, t); break;
+    case RenderMode::REAL: _tubeRenderer.render(index, t); break;
+    default: _lineRenderer.render(index, t);
     }
+}
+
+void MorphologyWidget::paintGL()
+{
+    t += 0.3f;
+
+    int numObjects = _lineRenderer.getNumRenderObjects();
+
+    if (numObjects < 1)
+        return;
+
+    renderCell(0);
+
+    //float renderWidth = width() / numObjects;
+    //for (int i = 0; i < _lineRenderer.getNumRenderObjects(); i++)
+    //{
+    //    glViewport(renderWidth * i, 0, renderWidth * (i+1), height() / 2);
+    //    renderCell(i);
+    //}
 
     QPainter painter(this);
 
