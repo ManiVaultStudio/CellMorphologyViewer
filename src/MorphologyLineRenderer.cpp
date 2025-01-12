@@ -24,30 +24,33 @@ void MorphologyLineRenderer::render(int index, float t)
 
     _lineShader.bind();
 
+    _viewMatrix.setToIdentity();
+    _viewMatrix.scale((_aspectRatio * 2) / _maxRowWidth);
+
+    float maxYExtent = 0;
     float xOffset = 0;
-
-    float totalWidth = 0;
-    for (int i = 0; i < _cellRenderObjects.size(); i++)
-    {
-        CellRenderObject& cellRenderObject = _cellRenderObjects[i];
-        totalWidth += cellRenderObject.maxExtent;
-    }
-    qDebug() << "Total width: " << totalWidth;
-    //_projMatrix.setToIdentity();
-    //_projMatrix.ortho(-_aspectRatio, _aspectRatio, -1, 1, -1, 1);
-
+    float yOffset = 0;
     for (int i = 0; i < _cellRenderObjects.size(); i++)
     {
         CellRenderObject& cellRenderObject = _cellRenderObjects[i];
 
         mv::Vector3f centroid = cellRenderObject.centroid;
-        float maxExtent = cellRenderObject.maxExtent;//
 
-        _viewMatrix.setToIdentity();
-        _viewMatrix.scale((_aspectRatio*2) / totalWidth);
-        
+        float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2));
+
+        // Find max height of cells in this row
+        if (cellRenderObject.ranges.y > maxYExtent)
+            maxYExtent = cellRenderObject.ranges.y;
+
+        if (xOffset + maxWidth > _maxRowWidth)
+        {
+            yOffset += maxYExtent;
+            maxYExtent = 0;
+            xOffset = 0;
+        }
+
         _modelMatrix.setToIdentity();
-        _modelMatrix.translate(-totalWidth/2 + maxExtent/2 + xOffset, 0, 0);
+        _modelMatrix.translate(-_maxRowWidth /2 + maxWidth /2 + xOffset, -yOffset, 0);
         _modelMatrix.rotate(t, 0, 1, 0);
         _modelMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
 
@@ -59,7 +62,7 @@ void MorphologyLineRenderer::render(int index, float t)
         glDrawArrays(GL_LINES, 0, cellRenderObject.numVertices);
         glBindVertexArray(0);
 
-        xOffset += maxExtent;
+        xOffset += maxWidth;
     }
 
     _lineShader.release();
@@ -147,6 +150,7 @@ void MorphologyLineRenderer::buildRenderObject(const CellMorphology& cellMorphol
     cellRenderObject.centroid = somaPosition;
     mv::Vector3f range = cellMorphology.maxRange - cellMorphology.minRange;
     float maxExtent = std::max(std::max(range.x, range.y), range.z);
+    cellRenderObject.ranges = range;
     cellRenderObject.maxExtent = maxExtent;
 
     _morphologyView = cellRenderObject;

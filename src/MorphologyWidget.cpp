@@ -46,6 +46,11 @@ MorphologyWidget::~MorphologyWidget()
 
 }
 
+void MorphologyWidget::setRowWidth(float rowWidth)
+{
+    _lineRenderer.setRowWidth(rowWidth);
+}
+
 void MorphologyWidget::setCellMorphology(const CellMorphology& cellMorphology)
 {
     if (!isInitialized)

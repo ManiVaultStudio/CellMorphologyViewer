@@ -40,6 +40,8 @@ public:
     }
 
     void updateNeuron(NeuronDescriptor nd);
+
+    void setRowWidth(float rowWidth);
     void setCellMorphology(const CellMorphology& cellMorphology);
     void setCellMetadata(QString cellId, QString subclass) { _cellId = cellId; _subclass = subclass; }
     void setCellMorphologyData(const MorphologyDescription& desc) { _desc = desc; }

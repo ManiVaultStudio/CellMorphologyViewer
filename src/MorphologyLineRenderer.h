@@ -25,11 +25,15 @@ public:
 
     virtual void render(int index, float t) override;
 
+    void setRowWidth(float rowWidth) { _maxRowWidth = rowWidth; }
+
 private:
     virtual void buildRenderObject(const CellMorphology& cellMorphology, CellRenderObject& cellRenderObject) override;
 
 private:
     mv::ShaderProgram _lineShader;
+
+    float _maxRowWidth; // Maximum width that can be filled by displayed cells, if exceeded, next cells are rendered below
 
     LRUCache<QString, CellRenderObject> _cellCache;
 };

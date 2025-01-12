@@ -24,6 +24,7 @@ public:
 
     int numVertices = 0;
 
+    mv::Vector3f ranges;
     float maxExtent;
     mv::Vector3f centroid;
 };

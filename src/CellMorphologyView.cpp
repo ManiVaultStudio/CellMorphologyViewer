@@ -206,6 +206,19 @@ void CellMorphologyView::onNeuronChanged()
     qDebug() << "Selection indices morph: " << selectionIndices.size();
     qDebug() << "Selection indices morph2: " << _scene._cellMorphologies->getSelection()->getSelectionIndices().size();
 
+    float totalWidth = 0;
+    for (CellMorphology& cellMorphology : _scene._cellMorphologies->getData())
+    {
+        Vector3f range = cellMorphology.maxRange - cellMorphology.minRange;
+
+        float maxWidth = sqrtf(range.x * range.x + range.z * range.z);
+
+        totalWidth += maxWidth;
+    }
+    float averageWidth = totalWidth / _scene._cellMorphologies->getData().size();
+
+    _morphologyWidget->setRowWidth(averageWidth * 8);
+
     CellMorphology cellMorphology;
     _morphologyWidget->setCellMorphology(cellMorphology);
 
