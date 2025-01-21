@@ -15,6 +15,7 @@ class MorphologyLineRenderer : public MorphologyRenderer
 public:
     MorphologyLineRenderer(Scene* scene) :
         MorphologyRenderer(scene),
+        _maxRowWidth(0),
         _cellCache(100)
     {
 

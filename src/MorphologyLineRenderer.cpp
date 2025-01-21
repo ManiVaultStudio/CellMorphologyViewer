@@ -27,6 +27,8 @@ void MorphologyLineRenderer::render(int index, float t)
     _viewMatrix.setToIdentity();
     _viewMatrix.scale((_aspectRatio * 2) / _maxRowWidth);
 
+    float maxColHeight = _maxRowWidth;
+
     float maxYExtent = 0;
     float xOffset = 0;
     float yOffset = 0;
@@ -44,13 +46,13 @@ void MorphologyLineRenderer::render(int index, float t)
 
         if (xOffset + maxWidth > _maxRowWidth)
         {
-            yOffset += maxYExtent;
+            yOffset -= maxYExtent;
             maxYExtent = 0;
             xOffset = 0;
         }
-
+        //qDebug() << "YOffset" << yOffset;
         _modelMatrix.setToIdentity();
-        _modelMatrix.translate(-_maxRowWidth /2 + maxWidth /2 + xOffset, -yOffset, 0);
+        _modelMatrix.translate(-_maxRowWidth /2 + maxWidth /2 + xOffset, yOffset, 0);
         _modelMatrix.rotate(t, 0, 1, 0);
         _modelMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
 
