@@ -19,19 +19,38 @@ void MorphologyLineRenderer::init()
 
 void MorphologyLineRenderer::render(int index, float t)
 {
+    float totalFramesWidth = 0;
+    float maxCellHeight = 0;
+    for (int i = 0; i < _cellRenderObjects.size(); i++)
+    {
+        CellRenderObject& cellRenderObject = _cellRenderObjects[i];
+        float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2));
+
+        maxCellHeight = cellRenderObject.ranges.y > maxCellHeight ? cellRenderObject.ranges.y : maxCellHeight;
+
+        totalFramesWidth += maxWidth;
+    }
+
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
     _lineShader.bind();
 
+    float framesAspectRatio = totalFramesWidth / maxCellHeight;
+
+    float scalingFactor = 1;
+    if (framesAspectRatio > _aspectRatio)
+    {
+        scalingFactor = totalFramesWidth / _aspectRatio;
+    }
+    else
+        scalingFactor = maxCellHeight;
+
     _viewMatrix.setToIdentity();
-    _viewMatrix.scale((_aspectRatio * 2) / _maxRowWidth);
+    _viewMatrix.scale(1.8 / scalingFactor);
 
-    float maxColHeight = _maxRowWidth;
-
-    float maxYExtent = 0;
+    //float maxYExtent = 0;
     float xOffset = 0;
-    float yOffset = 0;
     for (int i = 0; i < _cellRenderObjects.size(); i++)
     {
         CellRenderObject& cellRenderObject = _cellRenderObjects[i];
@@ -40,19 +59,9 @@ void MorphologyLineRenderer::render(int index, float t)
 
         float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2));
 
-        // Find max height of cells in this row
-        if (cellRenderObject.ranges.y > maxYExtent)
-            maxYExtent = cellRenderObject.ranges.y;
-
-        if (xOffset + maxWidth > _maxRowWidth)
-        {
-            yOffset -= maxYExtent;
-            maxYExtent = 0;
-            xOffset = 0;
-        }
         //qDebug() << "YOffset" << yOffset;
         _modelMatrix.setToIdentity();
-        _modelMatrix.translate(-_maxRowWidth /2 + maxWidth /2 + xOffset, yOffset, 0);
+        _modelMatrix.translate(-totalFramesWidth /2 + maxWidth /2 + xOffset, 0, 0);
         _modelMatrix.rotate(t, 0, 1, 0);
         _modelMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
 
