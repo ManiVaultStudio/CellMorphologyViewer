@@ -28,6 +28,8 @@ public:
 
     void setRowWidth(float rowWidth) { _maxRowWidth = rowWidth; }
 
+    void getCellMetadataLocations(std::vector<float>& locations);
+
 private:
     virtual void buildRenderObject(const CellMorphology& cellMorphology, CellRenderObject& cellRenderObject) override;
 

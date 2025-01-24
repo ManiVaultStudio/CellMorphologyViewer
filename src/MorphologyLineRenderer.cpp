@@ -24,16 +24,13 @@ void MorphologyLineRenderer::render(int index, float t)
     for (int i = 0; i < _cellRenderObjects.size(); i++)
     {
         CellRenderObject& cellRenderObject = _cellRenderObjects[i];
-        float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2));
+        float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2)) * 1.2f;
 
         maxCellHeight = cellRenderObject.ranges.y > maxCellHeight ? cellRenderObject.ranges.y : maxCellHeight;
 
         totalFramesWidth += maxWidth;
     }
-
-    glClearColor(1, 1, 1, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-
+    maxCellHeight *= 1.2f;
     _lineShader.bind();
 
     float framesAspectRatio = totalFramesWidth / maxCellHeight;
@@ -57,8 +54,8 @@ void MorphologyLineRenderer::render(int index, float t)
 
         mv::Vector3f centroid = cellRenderObject.centroid;
 
-        float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2));
-
+        float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2)) * 1.2f;
+        
         //qDebug() << "YOffset" << yOffset;
         _modelMatrix.setToIdentity();
         _modelMatrix.translate(-totalFramesWidth /2 + maxWidth /2 + xOffset, 0, 0);
@@ -77,6 +74,51 @@ void MorphologyLineRenderer::render(int index, float t)
     }
 
     _lineShader.release();
+}
+
+void MorphologyLineRenderer::getCellMetadataLocations(std::vector<float>& locations)
+{
+    float totalFramesWidth = 0;
+    float maxCellHeight = 0;
+
+    locations.resize(_cellRenderObjects.size());
+
+    float yOffset = 0;
+    for (int i = 0; i < _cellRenderObjects.size(); i++)
+    {
+        CellRenderObject& cellRenderObject = _cellRenderObjects[i];
+        float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2)) * 1.2f;
+
+        maxCellHeight = cellRenderObject.ranges.y > maxCellHeight ? cellRenderObject.ranges.y : maxCellHeight;
+
+        totalFramesWidth += maxWidth;
+    }
+    maxCellHeight *= 1.2f;
+    float framesAspectRatio = totalFramesWidth / maxCellHeight;
+
+    float scalingFactor = 1;
+    if (framesAspectRatio > _aspectRatio)
+    {
+        scalingFactor = totalFramesWidth / _aspectRatio;
+    }
+    else
+        scalingFactor = maxCellHeight;
+
+    float xOffset = 0;
+    for (int i = 0; i < locations.size(); i++)
+    {
+        CellRenderObject& cellRenderObject = _cellRenderObjects[i];
+        float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2)) * 1.2f;
+
+        QMatrix4x4 viewMatrix;
+        viewMatrix.scale(1.8 / scalingFactor);
+        QMatrix4x4 modelMatrix;
+        modelMatrix.translate(-totalFramesWidth / 2 + maxWidth / 2 + xOffset, 0, 0);
+        QVector4D v = _projMatrix * viewMatrix * modelMatrix * QVector4D(0, 0, 0, 1);
+        locations[i] = (v.x() / v.w()) * 0.5f + 0.5f;
+
+        xOffset += maxWidth;
+    }
 }
 
 void MorphologyLineRenderer::buildRenderObject(const CellMorphology& cellMorphology, CellRenderObject& cellRenderObject)

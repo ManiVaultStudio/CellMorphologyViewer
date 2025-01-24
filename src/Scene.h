@@ -15,7 +15,8 @@ public:
 
     }
 
-    mv::Dataset<CellMorphologies> getCellMorphologies() { return _cellMorphologies; }
+    mv::Dataset<CellMorphologies>   getCellMorphologies() { return _cellMorphologies; }
+    mv::Dataset<Text>               getCellMetadata() { return _cellMetadata; }
 
 private:
     mv::Dataset<Points>             _cellMorphologyData;        /** Morphology feature data */

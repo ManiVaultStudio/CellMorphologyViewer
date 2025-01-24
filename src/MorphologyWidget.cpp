@@ -100,10 +100,11 @@ void MorphologyWidget::paintGL()
 
     int numObjects = _lineRenderer.getNumRenderObjects();
 
+    glClearColor(1, 1, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     if (numObjects < 1)
         return;
-
-    renderCell(0);
 
     //float renderWidth = width() / numObjects;
     //for (int i = 0; i < _lineRenderer.getNumRenderObjects(); i++)
@@ -112,7 +113,53 @@ void MorphologyWidget::paintGL()
     //    renderCell(i);
     //}
 
+    std::vector<float> offset;
+    _lineRenderer.getCellMetadataLocations(offset);
+
     QPainter painter(this);
+
+    int MARGIN = 64;
+    QPen midPen(QColor(80, 80, 80, 255), 3, Qt::DashLine, Qt::FlatCap, Qt::RoundJoin);
+    painter.setPen(midPen);
+    painter.drawLine(MARGIN, height() / 2, width() - MARGIN, height() / 2);
+
+    QPen leftAxis(QColor(80, 80, 80, 255), 2, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
+    painter.setPen(leftAxis);
+    painter.drawLine(MARGIN, MARGIN, MARGIN, height() - MARGIN);
+
+    mv::Dataset<CellMorphologies> morphologyDataset = _scene->getCellMorphologies();
+    mv::Dataset<Text> cellMetadata = _scene->getCellMetadata();
+    const auto& selectionIndices = morphologyDataset->getSelectionIndices();
+    QStringList morphCellIds = morphologyDataset->getCellIdentifiers();
+    std::vector<QString> cellIds = cellMetadata->getColumn("Cell ID");
+    std::vector<QString> subclasses = cellMetadata->getColumn("Subclass");
+
+    QFont font = painter.font();
+    //font.setPointSizeF(font.pointSizeF() * 2);
+    painter.setFont(font);
+
+    painter.setPen(QPen(Qt::black, 1));
+    for (int i = 0; i < selectionIndices.size(); i++)
+    {
+        int si = selectionIndices[i];
+        CellMorphology& morphology = morphologyDataset->getData()[si];
+
+        QString morphCellId = morphCellIds[si];
+        for (int ci = 0; ci < cellIds.size(); ci++)
+        {
+            if (cellIds[ci] == morphCellId)
+            {
+                qDebug() << "CellID: " << cellIds[ci];
+                qDebug() << "Subclass: " << subclasses[ci];
+                painter.drawText(offset[i] * width()-16, 16, subclasses[ci]);
+            }
+        }
+    }
+
+    painter.beginNativePainting();
+
+    renderCell(0);
+    painter.endNativePainting();
 
     //QFont font = painter.font();
     //font.setPointSize(14);
