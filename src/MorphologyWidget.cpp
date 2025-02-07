@@ -132,26 +132,30 @@ void MorphologyWidget::paintGL()
     const auto& selectionIndices = morphologyDataset->getSelectionIndices();
     QStringList morphCellIds = morphologyDataset->getCellIdentifiers();
     std::vector<QString> cellIds = cellMetadata->getColumn("Cell ID");
-    std::vector<QString> subclasses = cellMetadata->getColumn("Subclass");
 
-    QFont font = painter.font();
-    //font.setPointSizeF(font.pointSizeF() * 2);
-    painter.setFont(font);
-
-    painter.setPen(QPen(Qt::black, 1));
-    for (int i = 0; i < selectionIndices.size(); i++)
+    if (cellMetadata->hasColumn("Subclass"))
     {
-        int si = selectionIndices[i];
-        CellMorphology& morphology = morphologyDataset->getData()[si];
+        std::vector<QString> subclasses = cellMetadata->getColumn("Subclass");
 
-        QString morphCellId = morphCellIds[si];
-        for (int ci = 0; ci < cellIds.size(); ci++)
+        QFont font = painter.font();
+        //font.setPointSizeF(font.pointSizeF() * 2);
+        painter.setFont(font);
+
+        painter.setPen(QPen(Qt::black, 1));
+        for (int i = 0; i < selectionIndices.size(); i++)
         {
-            if (cellIds[ci] == morphCellId)
+            int si = selectionIndices[i];
+            CellMorphology& morphology = morphologyDataset->getData()[si];
+
+            QString morphCellId = morphCellIds[si];
+            for (int ci = 0; ci < cellIds.size(); ci++)
             {
-                qDebug() << "CellID: " << cellIds[ci];
-                qDebug() << "Subclass: " << subclasses[ci];
-                painter.drawText(offset[i] * width()-16, 16, subclasses[ci]);
+                if (cellIds[ci] == morphCellId)
+                {
+                    qDebug() << "CellID: " << cellIds[ci];
+                    qDebug() << "Subclass: " << subclasses[ci];
+                    painter.drawText(offset[i] * width() - 16, 16, subclasses[ci]);
+                }
             }
         }
     }
