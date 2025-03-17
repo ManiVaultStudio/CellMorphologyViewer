@@ -221,102 +221,6 @@ void CellMorphologyView::onNeuronChanged()
 
     CellMorphology cellMorphology;
     _morphologyWidget->setCellMorphology(cellMorphology);
-
-    return;
-
-    //const QStringList& cellIdsWithMorphologies = _scene._cellMorphologies->getCellIdentifiers();
-
-    //const auto& selectionIndices = _scene._cellMorphologies->getSelectionIndices();
-
-    //for (int i = 0; i < selectionIndices.size(); i++)
-    //{
-    //    _morphologyWidget->set
-    //}
-
-
-
-    //////////////
-    //auto selectionDataset = _scene._cellMetadata->getSelection();
-
-    //const std::vector<uint32_t>& metaIndices = selectionDataset->getSelectionIndices();
-
-    //if (metaIndices.empty())
-    //    return;
-
-    //std::vector<QString> cellIds = _scene._cellMetadata->getColumn("Cell ID");
-    //std::vector<QString> cellSubclasses = _scene._cellMetadata->getColumn("Subclass");
-
-    //// Find first cell with morphology
-    //QString foundCellId;
-    //uint32_t foundCellIndex = -1;
-    //for (uint32_t metaIndex : metaIndices)
-    //{
-    //    QString cellId = cellIds[metaIndex];
-
-    //    // Get index of cell identifier
-    //    const QStringList& cellIdsWithMorphologies = _scene._cellMorphologies->getCellIdentifiers();
-
-    //    int ci = cellIdsWithMorphologies.indexOf(cellId);
-
-    //    if (ci != -1)
-    //    {
-    //        // Found a cell with morphology
-    //        foundCellId = cellId;
-    //        foundCellIndex = ci;
-    //        break;
-    //    }
-    //}
-
-    //if (foundCellId.isEmpty())
-    //{
-    //    qWarning() << "No cells were selected that have an associated morphology loaded.";
-    //    return;
-    //}
-
-    //uint32_t cellIndex = metaIndices[0];
-
-    //qDebug() << "Found cell with ID: " << foundCellId;
-
-    //// Get cell morphology at index
-    //const std::vector<CellMorphology>& cellMorphologies = _scene._cellMorphologies->getData();
-
-    //const CellMorphology& cellMorphology = cellMorphologies[foundCellIndex];
-
-    //_morphologyWidget->setCellMorphology(cellMorphology);
-    //_morphologyWidget->setCellMetadata(foundCellId, cellSubclasses[cellIndex]);
-
-    //// Check if any cell morphology data is loaded
-    //if (!_scene._cellMorphologyData.isValid())
-    //{
-    //    qWarning() << "No cell morphology data dataset set.";
-    //    return;
-    //}
-
-    //// Provide additional cell morphological feature
-    //const std::vector<uint32_t>& cmdIndices = _scene._cellMorphologyData->getSelectionIndices();
-
-    //if (cmdIndices.empty())
-    //    return;
-
-    //uint32_t cmdIndex = cmdIndices[0];
-
-    //size_t index = cmdIndex * _scene._cellMorphologyData->getNumDimensions();
-
-    //_scene._cellMorphologyData->getDimensionNames();
-
-    //std::vector<float> values(_scene._cellMorphologyData->getNumDimensions());
-    //for (int i = 0; i < values.size(); i++)
-    //{
-    //    values[i] = _scene._cellMorphologyData->getValueAt(index + i);
-    //}
-
-    //qDebug() << "apical_dendrite_bias_x" << _scene._cellMorphologyData->getValueAt(index);
-
-    //MorphologyDescription morphDescription;
-    //morphDescription.setData(_scene._cellMorphologyData->getDimensionNames(), values);
-
-    //_morphologyWidget->setCellMorphologyData(morphDescription);
-    //qDebug() << morphDescription.getApicalDendriteDescription().bias.x;
 }
 
 void CellMorphologyView::onCellIdDatasetChanged()
@@ -359,7 +263,7 @@ mv::gui::PluginTriggerActions CellMorphologyPluginFactory::getPluginTriggerActio
     const auto numberOfDatasets = datasets.count();
 
     if (numberOfDatasets >= 1 && PluginFactory::areAllDatasetsOfTheSameType(datasets, TextType)) {
-        auto pluginTriggerAction = new PluginTriggerAction(const_cast<CellMorphologyPluginFactory*>(this), this, "Example", "View example data", icon(), [this, getPluginInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+        auto pluginTriggerAction = new PluginTriggerAction(const_cast<CellMorphologyPluginFactory*>(this), this, "Cell Morphology", "View cell morphologies", icon(), [this, getPluginInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
             for (auto dataset : datasets)
                 getPluginInstance();
         });
