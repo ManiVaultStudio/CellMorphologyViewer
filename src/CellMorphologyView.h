@@ -17,13 +17,13 @@
 
 #include <QWidget>
 
-/** All plugin related classes are in the HDPS plugin namespace */
+/** All plugin related classes are in the mv plugin namespace */
 using namespace mv::plugin;
 
-/** Drop widget used in this plugin is located in the HDPS gui namespace */
+/** Drop widget used in this plugin is located in the mv gui namespace */
 using namespace mv::gui;
 
-/** Dataset reference used in this plugin is located in the HDPS util namespace */
+/** Dataset reference used in this plugin is located in the mv util namespace */
 using namespace mv::util;
 
 class QLabel;
@@ -56,14 +56,8 @@ public:
      * @param dataEvent Data event which occurred
      */
     void onDataEvent(mv::DatasetEvent* dataEvent);
-    void onNeuronChanged();
-
-    void dataInputChanged(const QString& dataInput);
 
 private:
-    /** Invoked when the position points dataset changes */
-    void onCellIdDatasetChanged();
-
     void onCellSelectionChanged();
 
 private:
@@ -73,14 +67,7 @@ private:
 
     Scene                           _scene;
 
-    MorphologyWidget*         _morphologyWidget;
-    StringAction              _inputAction;
-    //StringAction            _tTypeClassAction;
-    //StringAction            _tTypeAction;
-
-    NeuronDescriptor        _currentNeuron;
-
-    std::vector<NeuronDescriptor> _neuronList;
+    MorphologyWidget*               _morphologyWidget;
 };
 
 /**

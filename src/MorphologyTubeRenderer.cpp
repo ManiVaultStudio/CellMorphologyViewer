@@ -276,7 +276,7 @@ void MorphologyTubeRenderer::buildRenderObject(const CellMorphology& cellMorphol
     glBindBuffer(GL_ARRAY_BUFFER, cellRenderObject.tbo);
     glBufferData(GL_ARRAY_BUFFER, types.size() * sizeof(int), types.data(), GL_STATIC_DRAW);
 
-    cellRenderObject.numVertices = allTubeVertices.size();
+    cellRenderObject.numVertices = (int) allTubeVertices.size();
     qDebug() << ">>>>>>>>>>>>>>>>>>>>> Num vertices: " << cellRenderObject.numVertices;
 
     cellRenderObject.centroid = somaPosition;

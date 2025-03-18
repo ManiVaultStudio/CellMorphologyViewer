@@ -7,13 +7,7 @@
 class Scene
 {
 public:
-    Scene() :
-        _cellMorphologyData(),
-        _cellMorphologies(),
-        _cellMetadata()
-    {
-
-    }
+    Scene();
 
     mv::Dataset<CellMorphologies>   getCellMorphologies() { return _cellMorphologies; }
     mv::Dataset<Text>               getCellMetadata() { return _cellMetadata; }

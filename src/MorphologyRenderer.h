@@ -25,7 +25,7 @@ public:
     int numVertices = 0;
 
     mv::Vector3f ranges;
-    float maxExtent;
+    float maxExtent = 0;
     mv::Vector3f centroid;
 };
 
@@ -47,7 +47,7 @@ public:
 
     void buildRenderObjects();
 
-    int getNumRenderObjects() { return _cellRenderObjects.size(); }
+    int getNumRenderObjects() { return (int) _cellRenderObjects.size(); }
 
 protected:
     virtual void buildRenderObject(const CellMorphology& cellMorphology, CellRenderObject& cellRenderObject) = 0;

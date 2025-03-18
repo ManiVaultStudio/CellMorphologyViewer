@@ -42,16 +42,14 @@ CellMorphologyView::CellMorphologyView(const PluginFactory* factory) :
     _dropWidget(nullptr),
     _scene(),
     _morphologyWidget(new MorphologyWidget(this, &_scene)),
-    _inputAction(this, "Dataset ID", ""),
     _primaryToolbarAction(this, "PrimaryToolbar"),
     _settingsAction(this, "SettingsAction")
-    //_tTypeClassAction(this, "T-Type Class", "", ""),
-    //_tTypeAction(this, "T-Type", "", "")
 {
-    //connect(&_inputAction, &StringAction::stringChanged, this, &CellMorphologyView::dataInputChanged);
-    connect(_morphologyWidget, &MorphologyWidget::changeNeuron, this, &CellMorphologyView::onNeuronChanged);
-
-    connect(&_scene._cellMetadata, &Dataset<Text>::changed, this, &CellMorphologyView::onCellIdDatasetChanged);
+    // Notice when the cell morphologies dataset changes, so that we can connect to its selection changes
+    connect(&_scene._cellMorphologies, &Dataset<CellMorphologies>::changed, this, [this]() {
+        if (_scene._cellMorphologies.isValid())
+            connect(&_scene._cellMorphologies, &Dataset<CellMorphologies>::dataSelectionChanged, this, &CellMorphologyView::onCellSelectionChanged);
+    });
 }
 
 void CellMorphologyView::init()
@@ -68,10 +66,7 @@ void CellMorphologyView::init()
     connect(&_settingsAction.getRealRendererButton(), &TriggerAction::triggered, this, [this]() { _morphologyWidget->setRenderMode(RenderMode::REAL); });
 
     layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
-    //layout->addWidget(_tTypeClassAction.createWidget(&getWidget()), 1);
-    //layout->addWidget(_tTypeAction.createWidget(&getWidget()), 1);
-    layout->addWidget(_morphologyWidget, 99);
-    layout->addWidget(_inputAction.createWidget(&getWidget()), 1);
+    layout->addWidget(_morphologyWidget);
 
     // Apply the layout
     getWidget().setLayout(layout);
@@ -91,9 +86,6 @@ void CellMorphologyView::init()
     _eventListener.registerDataEventByType(PointType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
     _eventListener.registerDataEventByType(TextType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
     _eventListener.registerDataEventByType(CellMorphologyType, std::bind(&CellMorphologyView::onDataEvent, this, std::placeholders::_1));
-
-    //Query query;
-    //_neuronList = query.send();
 
     // Check if any usable datasets are already available, if so, use them
     for (mv::Dataset dataset : mv::data().getAllDatasets())
@@ -139,57 +131,15 @@ void CellMorphologyView::onDataEvent(mv::DatasetEvent* dataEvent)
             break;
         }
 
-        // Points dataset data has changed
-        case EventType::DatasetDataChanged:
-        {
-            // Cast the data event to a data changed event
-            const auto dataChangedEvent = static_cast<DatasetDataChangedEvent*>(dataEvent);
-
-            // Get the name of the points dataset of which the data changed and print to the console
-            //qDebug() << datasetGuiName << "data changed";
-
-            break;
-        }
-
-        // Points dataset data was removed
-        case EventType::DatasetRemoved:
-        {
-            // Cast the data event to a data removed event
-            const auto dataRemovedEvent = static_cast<DatasetRemovedEvent*>(dataEvent);
-
-            // Get the name of the removed points dataset and print to the console
-            qDebug() << datasetGuiName << "was removed";
-
-            break;
-        }
-
-        // Points dataset selection has changed
-        case EventType::DatasetDataSelectionChanged:
-        {
-            // Cast the data event to a data selection changed event
-            const auto dataSelectionChangedEvent = static_cast<DatasetDataSelectionChangedEvent*>(dataEvent);
-
-            // Get the selection set that changed
-            const auto& selectionSet = changedDataSet->getSelection<Text>();
-
-            // Print to the console
-            //qDebug() << datasetGuiName << "selection has changed";
-
-            break;
-        }
-
         default:
             break;
     }
 }
 
-void CellMorphologyView::dataInputChanged(const QString& dataInput)
+void CellMorphologyView::onCellSelectionChanged()
 {
+    qDebug() << "onCellSelectionChanged()";
 
-}
-
-void CellMorphologyView::onNeuronChanged()
-{
     if (!_scene._cellMetadata.isValid())
     {
         qWarning() << "No cell metadata dataset set.";
@@ -221,20 +171,6 @@ void CellMorphologyView::onNeuronChanged()
 
     CellMorphology cellMorphology;
     _morphologyWidget->setCellMorphology(cellMorphology);
-}
-
-void CellMorphologyView::onCellIdDatasetChanged()
-{
-    connect(&_scene._cellMetadata, &Dataset<Text>::dataSelectionChanged, this, &CellMorphologyView::onCellSelectionChanged);
-}
-
-void CellMorphologyView::onCellSelectionChanged()
-{
-    qDebug() << "onCellSelectionChanged()";
-    if (!_scene._cellMetadata.isValid())
-        return;
-    qDebug() << "Metadata selection size: " << _scene._cellMetadata->getSelection()->getSelectionIndices().size();
-    onNeuronChanged();
 }
 
 ViewPlugin* CellMorphologyPluginFactory::produce()

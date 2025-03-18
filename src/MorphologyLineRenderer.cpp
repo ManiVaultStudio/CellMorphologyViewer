@@ -45,7 +45,7 @@ void MorphologyLineRenderer::render(int index, float t)
 
     _viewMatrix.setToIdentity();
     _viewMatrix.scale(1.8 / scalingFactor);
-
+    
     //float maxYExtent = 0;
     float xOffset = 0;
     for (int i = 0; i < _cellRenderObjects.size(); i++)
@@ -198,7 +198,7 @@ void MorphologyLineRenderer::buildRenderObject(const CellMorphology& cellMorphol
     glBufferData(GL_ARRAY_BUFFER, lineSegments.segmentTypes.size() * sizeof(int), lineSegments.segmentTypes.data(), GL_STATIC_DRAW);
     qDebug() << "TBO size: " << (lineSegments.segmentTypes.size() * sizeof(int)) / 1000 << "kb";
 
-    cellRenderObject.numVertices = lineSegments.segments.size();
+    cellRenderObject.numVertices = (int) lineSegments.segments.size();
 
     cellRenderObject.centroid = somaPosition;
     mv::Vector3f range = cellMorphology.maxRange - cellMorphology.minRange;
