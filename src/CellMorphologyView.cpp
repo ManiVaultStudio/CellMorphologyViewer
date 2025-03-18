@@ -46,7 +46,7 @@ void CellMorphologyView::init()
     connect(&_settingsAction.getRealRendererButton(), &TriggerAction::triggered, this, [this]() { _morphologyWidget->setRenderMode(RenderMode::REAL); });
 
     layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
-    layout->addWidget(_morphologyWidget);
+    layout->addWidget(_morphologyWidget, 100);
 
     // Apply the layout
     getWidget().setLayout(layout);
