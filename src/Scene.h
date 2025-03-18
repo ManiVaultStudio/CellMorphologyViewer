@@ -9,13 +9,16 @@ class Scene
 public:
     Scene();
 
-    mv::Dataset<CellMorphologies>   getCellMorphologies() { return _cellMorphologies; }
-    mv::Dataset<Text>               getCellMetadata() { return _cellMetadata; }
+    bool hasAllRequiredDatasets();
+
+    mv::Dataset<CellMorphologies>&   getMorphologyDataset()           { return _morphologyDataset; }
+    mv::Dataset<Points>&             getMorphologyFeatureDataset()    { return _morphologyFeatureDataset; }
+    mv::Dataset<Text>&               getCellMetadataDataset()         { return _cellMetadataDataset; }
+
+    void offerCandidateDataset(mv::Dataset<mv::DatasetImpl> candidateDataset);
 
 private:
-    mv::Dataset<Points>             _cellMorphologyData;        /** Morphology feature data */
-    mv::Dataset<CellMorphologies>   _cellMorphologies;          /** Morphology data */
-    mv::Dataset<Text>               _cellMetadata;              /** Cell metadata */
-
-    friend class CellMorphologyView;
+    mv::Dataset<CellMorphologies>   _morphologyDataset;             /** Morphology data */
+    mv::Dataset<Points>             _morphologyFeatureDataset;      /** Morphology feature data */
+    mv::Dataset<Text>               _cellMetadataDataset;           /** Cell metadata */
 };

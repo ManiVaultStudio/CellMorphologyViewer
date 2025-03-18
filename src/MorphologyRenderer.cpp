@@ -33,7 +33,7 @@ void MorphologyRenderer::buildRenderObjects()
 
     _cellRenderObjects.clear();
 
-    mv::Dataset<CellMorphologies> morphologyDataset = _scene->getCellMorphologies();
+    mv::Dataset<CellMorphologies> morphologyDataset = _scene->getMorphologyDataset();
 
     const auto& selectionIndices = morphologyDataset->getSelectionIndices();
 

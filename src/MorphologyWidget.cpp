@@ -127,8 +127,8 @@ void MorphologyWidget::paintGL()
     painter.setPen(leftAxis);
     painter.drawLine(MARGIN, MARGIN, MARGIN, height() - MARGIN);
 
-    mv::Dataset<CellMorphologies> morphologyDataset = _scene->getCellMorphologies();
-    mv::Dataset<Text> cellMetadata = _scene->getCellMetadata();
+    mv::Dataset<CellMorphologies> morphologyDataset = _scene->getMorphologyDataset();
+    mv::Dataset<Text> cellMetadata = _scene->getCellMetadataDataset();
     const auto& selectionIndices = morphologyDataset->getSelectionIndices();
     QStringList morphCellIds = morphologyDataset->getCellIdentifiers();
     std::vector<QString> cellIds = cellMetadata->getColumn("Cell ID");
