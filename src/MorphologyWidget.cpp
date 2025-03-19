@@ -3,11 +3,8 @@
 #include "CellMorphologyView.h"
 
 #include "CellMorphologyData/CellMorphology.h"
-//#include "ImageQuery.h"
 
 #include <QPainter>
-//#include <QNetworkAccessManager>
-//#include <QSslSocket>
 #include <QEvent>
 #include <QResizeEvent>
 
@@ -51,16 +48,13 @@ void MorphologyWidget::setRowWidth(float rowWidth)
     _lineRenderer.setRowWidth(rowWidth);
 }
 
-void MorphologyWidget::setCellMorphology(const CellMorphology& cellMorphology)
+void MorphologyWidget::uploadMorphologies()
 {
     if (!isInitialized)
         return;
 
     makeCurrent();
     _lineRenderer.buildRenderObjects();
-    //makeCurrent();
-    //_lineRenderer.setCellMorphology(cellMorphology);
-    //_tubeRenderer.setCellMorphology(cellMorphology);
 }
 
 void MorphologyWidget::initializeGL()
@@ -84,16 +78,6 @@ void MorphologyWidget::resizeGL(int w, int h)
     _tubeRenderer.resize(w, h);
 }
 
-void MorphologyWidget::renderCell(int index)
-{
-    switch (_renderMode)
-    {
-    case RenderMode::LINE: _lineRenderer.render(index, t); break;
-    case RenderMode::REAL: _tubeRenderer.render(index, t); break;
-    default: _lineRenderer.render(index, t);
-    }
-}
-
 void MorphologyWidget::paintGL()
 {
     t += 0.3f;
@@ -105,13 +89,6 @@ void MorphologyWidget::paintGL()
 
     if (numObjects < 1)
         return;
-
-    //float renderWidth = width() / numObjects;
-    //for (int i = 0; i < _lineRenderer.getNumRenderObjects(); i++)
-    //{
-    //    glViewport(renderWidth * i, 0, renderWidth * (i+1), height() / 2);
-    //    renderCell(i);
-    //}
 
     std::vector<float> offset;
     _lineRenderer.getCellMetadataLocations(offset);
@@ -152,49 +129,22 @@ void MorphologyWidget::paintGL()
             {
                 if (cellIds[ci] == morphCellId)
                 {
-                    qDebug() << "CellID: " << cellIds[ci];
-                    qDebug() << "Subclass: " << subclasses[ci];
-                    painter.drawText(offset[i] * width() - 16, 16, subclasses[ci]);
+                    painter.drawText(offset[i] * width() - 16, 16, clusters[ci]);
                 }
             }
         }
     }
-
+    
     painter.beginNativePainting();
 
-    renderCell(0);
+    switch (_renderMode)
+    {
+        case RenderMode::LINE: _lineRenderer.render(0, t); break;
+        case RenderMode::REAL: _tubeRenderer.render(0, t); break;
+        default: _lineRenderer.render(0, t);
+    }
+
     painter.endNativePainting();
-
-    //QFont font = painter.font();
-    //font.setPointSize(14);
-    //painter.setFont(font);
-    //painter.setPen(QPen(Qt::white));
-    //painter.drawText(25, 60, "Cell ID: " + _cellId);
-    //
-    //font.setPointSize(14);
-    //painter.setFont(font);
-    //painter.drawText(25, 80, "Class: " + _nd.tTypeSubClass);
-
-    //font.setPointSize(14);
-    //painter.setFont(font);
-    //painter.drawText(25, 100, "Subclass: " + _subclass);
-
-    //font.setPointSize(14);
-    //painter.setFont(font);
-    //painter.drawText(25, 120, "Cortical Layer: " + _nd.corticalLayer);
-
-    //painter.fillRect(20, 130, 200, 200, QColor(64, 64, 64));
-    //font.setPointSize(10);
-    //painter.setFont(font);
-    //painter.drawText(25, 140, "Apical Dendrite Bias X: " + QString::number(_desc.getApicalDendriteDescription().bias.x));
-    //painter.drawText(25, 155, "Num branches - " + QString::number(_desc.getApicalDendriteDescription().numBranches));
-    //painter.drawText(25, 170, QString("Extent - x:%1, y:%2").arg(_desc.getApicalDendriteDescription().extent.x).arg(_desc.getApicalDendriteDescription().extent.y));
-
-    //painter.drawPixmap(-30, -30, 300, 300, _wheelImage);
-
-    //painter.drawPixmap(0, 250, 400, 300, _morphologyImage);
-
-    //painter.drawPixmap(0, 500, 300, 300, _evImage);
 
     painter.end();
 }
@@ -203,34 +153,6 @@ void MorphologyWidget::cleanup()
 {
 
 }
-
-void MorphologyWidget::updateNeuron(NeuronDescriptor nd)
-{
-    _nd = nd;
-
-    //qDebug() << QSslSocket::supportsSsl() << QSslSocket::sslLibraryBuildVersionString() << QSslSocket::sslLibraryVersionString();
-
-    //QByteArray ba = loadImage(_nd.morphologyUrl);
-
-    //_morphologyImage.loadFromData(ba);
-
-    //ba = loadImage(_nd.evUrl);
-    //_evImage.loadFromData(ba);
-
-    //ba = loadImage(_nd.wheelUrl);
-    //_wheelImage.loadFromData(ba);
-
-    //QNetworkAccessManager* nam = new QNetworkAccessManager(this);
-    //connect(nam, &QNetworkAccessManager::finished, this, &MorphologyWidget::downloadFinished);
-    //const QUrl url = QUrl(_nd.morphologyUrl);
-    //QNetworkRequest request(url);
-    //nam->get(request);
-}
-
-//void MorphologyWidget::downloadFinished(QNetworkReply* reply)
-//{
-//    _morphologyImage.loadFromData(reply->readAll());
-//}
 
 bool MorphologyWidget::eventFilter(QObject* target, QEvent* event)
 {
@@ -252,22 +174,6 @@ bool MorphologyWidget::eventFilter(QObject* target, QEvent* event)
 
         makeCurrent();
         _tubeRenderer.reloadShaders();
-
-        break;
-    }
-
-    case QEvent::MouseButtonRelease:
-    {
-        auto mouseEvent = static_cast<QMouseEvent*>(event);
-
-        break;
-    }
-
-    case QEvent::MouseMove:
-    {
-        auto mouseEvent = static_cast<QMouseEvent*>(event);
-
-        //t = mouseEvent->x();
 
         break;
     }

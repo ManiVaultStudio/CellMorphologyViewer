@@ -39,14 +39,10 @@ public:
         _renderMode = renderMode;
     }
 
-    void updateNeuron(NeuronDescriptor nd);
-
     void setRowWidth(float rowWidth);
-    void setCellMorphology(const CellMorphology& cellMorphology);
+    void uploadMorphologies();
     void setCellMetadata(QString cellId, QString subclass) { _cellId = cellId; _subclass = subclass; }
     void setCellMorphologyData(const MorphologyDescription& desc) { _desc = desc; }
-
-    void renderCell(int index);
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
@@ -55,8 +51,6 @@ protected:
     void cleanup();
 
     bool eventFilter(QObject* target, QEvent* event);
-
-    //void downloadFinished(QNetworkReply* reply);
 
 signals:
     void changeNeuron(QString neuronId);
@@ -67,10 +61,6 @@ private:
     Scene* _scene;
 
     NeuronDescriptor _nd;
-
-    //QPixmap _morphologyImage;
-    //QPixmap _evImage;
-    //QPixmap _wheelImage;
 
     float t = 0;
 

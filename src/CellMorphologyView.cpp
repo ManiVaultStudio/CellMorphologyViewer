@@ -101,14 +101,12 @@ void CellMorphologyView::onDataEvent(mv::DatasetEvent* dataEvent)
 
 void CellMorphologyView::onCellSelectionChanged()
 {
-    qDebug() << "onCellSelectionChanged()";
-
+    // Check if the morphology, features and metadata datasets are loaded
     if (!_scene.hasAllRequiredDatasets())
         return;
 
+    // Compute maximum width of the visualization, i.e. how many cells can we fit on average
     const auto& selectionIndices = _scene.getMorphologyDataset()->getSelectionIndices();
-    qDebug() << "Selection indices morph: " << selectionIndices.size();
-    qDebug() << "Selection indices morph2: " << _scene.getMorphologyDataset()->getSelection()->getSelectionIndices().size();
 
     float totalWidth = 0;
     for (CellMorphology& cellMorphology : _scene.getMorphologyDataset()->getData())
@@ -123,8 +121,8 @@ void CellMorphologyView::onCellSelectionChanged()
 
     _morphologyWidget->setRowWidth(averageWidth * 8);
 
-    CellMorphology cellMorphology;
-    _morphologyWidget->setCellMorphology(cellMorphology);
+    // Upload cell morphologies
+    _morphologyWidget->uploadMorphologies();
 }
 
 ViewPlugin* CellMorphologyPluginFactory::produce()
