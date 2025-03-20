@@ -5,16 +5,9 @@
 #include "MorphologyLineRenderer.h"
 #include "MorphologyTubeRenderer.h"
 
-#include "MorphologyDescription.h"
-
-#include "NeuronDescriptor.h"
-
 #include "graphics/Vector3f.h"
 
 #include <QOpenGLWidget>
-
-#include <QNetworkReply>
-#include <QPixmap>
 
 #include <vector>
 #include <unordered_map>
@@ -41,8 +34,6 @@ public:
 
     void setRowWidth(float rowWidth);
     void uploadMorphologies();
-    void setCellMetadata(QString cellId, QString subclass) { _cellId = cellId; _subclass = subclass; }
-    void setCellMorphologyData(const MorphologyDescription& desc) { _desc = desc; }
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
@@ -52,22 +43,12 @@ protected:
 
     bool eventFilter(QObject* target, QEvent* event);
 
-signals:
-    void changeNeuron(QString neuronId);
-
 private:
     bool isInitialized = false;
 
     Scene* _scene;
 
-    NeuronDescriptor _nd;
-
     float t = 0;
-
-    QString _cellId;
-    QString _subclass;
-
-    MorphologyDescription _desc;
 
     MorphologyLineRenderer _lineRenderer;
     MorphologyTubeRenderer _tubeRenderer;
