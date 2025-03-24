@@ -138,7 +138,7 @@ void MorphologyWidget::onWidgetRendered()
             {
                 if (cellIds[ci] == morphCellId)
                 {
-                    painter.drawText(offset[i] * chartWidth - 16 + MARGIN, 16, clusters[ci]);
+                    painter.drawText(offset[i] * chartWidth - 16 + MARGIN, 48, clusters[ci]);
                 }
             }
         }

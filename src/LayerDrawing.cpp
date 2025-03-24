@@ -33,6 +33,12 @@ void LayerDrawing::drawAxes(QPainter& painter, Scene* scene)
     //int lightness = 240;
     std::vector<int> lineHeights(cortexStructure._layerDepths.size() + 1);
 
+    QFont originalFont = painter.font();
+    QFont layerFont = originalFont;
+    layerFont.setPointSizeF(layerFont.pointSizeF() * 1.5f);
+    layerFont.setBold(true);
+    painter.setFont(layerFont);
+
     for (int i = 0; i < cortexStructure._layerDepths.size(); i++)
     {
         float layerDepth = cortexStructure.getLayerDepth(i);
@@ -46,10 +52,20 @@ void LayerDrawing::drawAxes(QPainter& painter, Scene* scene)
 
         drawHorizontalLine(painter, lineY);
 
+        if (i != cortexStructure._layerDepths.size() - 1)
+        {
+            int bottomY = (cortexStructure.getLayerDepth(i+1) / _depthRange) * chartHeight + MARGIN;
+            int midPoint = (bottomY + lineY) / 2;
+
+
+            painter.drawText(MARGIN - 28, midPoint + 8, "L" + QString::number(i + 1));
+        }
+
         //painter.fillRect(MARGIN, topY, chartWidth, abs(topY - bottomY), QColor::fromHsl(0, 0, lightness));
         //lightness -= 2;
     }
-    
+
+    painter.setFont(originalFont);
     painter.setPen(axisPen);
     painter.drawLine(MARGIN, MARGIN, MARGIN, _parent->height() - MARGIN);
 }
