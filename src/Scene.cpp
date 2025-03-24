@@ -1,5 +1,7 @@
 #include "Scene.h"
 
+#include "LayerDepthsReader.h"
+
 namespace
 {
     bool isMorphologicalData(mv::Dataset<DatasetImpl> dataset)
@@ -23,7 +25,8 @@ Scene::Scene() :
     _morphologyDataset(),
     _cellMetadataDataset()
 {
-
+    // Load average layer depth
+    _cortexStructure = LayerDepthsReader::load(":/cell_morphology_view/human_average_layer_depths.json");
 }
 
 bool Scene::hasAllRequiredDatasets()

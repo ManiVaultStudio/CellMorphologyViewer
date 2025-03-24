@@ -1,9 +1,11 @@
 <RCC>
-    <qresource prefix="/">
+    <qresource prefix="cell_morphology_view">
         <file>shaders/PassThrough.vert</file>
         <file>shaders/Lines.frag</file>
         <file>shaders/Model.vert</file>
         <file>shaders/Tubes.frag</file>
-        <file>query.q</file>
+        <file>shaders/Quad.vert</file>
+        <file>shaders/Quad.frag</file>
+        <file>human_average_layer_depths.json</file>
     </qresource>
 </RCC>

@@ -8,7 +8,8 @@ void MorphologyLineRenderer::init()
 
     // Load shaders
     bool loaded = true;
-    loaded &= _lineShader.loadShaderFromFile(":shaders/PassThrough.vert", ":shaders/Lines.frag");
+    loaded &= _lineShader.loadShaderFromFile(":cell_morphology_view/shaders/PassThrough.vert", ":cell_morphology_view/shaders/Lines.frag");
+    loaded &= _quadShader.loadShaderFromFile(":cell_morphology_view/shaders/Quad.vert", ":cell_morphology_view/shaders/Quad.frag");
 
     if (!loaded) {
         qCritical() << "Failed to load one of the morphology shaders";
@@ -19,34 +20,21 @@ void MorphologyLineRenderer::init()
 
 void MorphologyLineRenderer::render(int index, float t)
 {
-    float totalFramesWidth = 0;
-    float maxCellHeight = 0;
-    for (int i = 0; i < _cellRenderObjects.size(); i++)
-    {
-        CellRenderObject& cellRenderObject = _cellRenderObjects[i];
-        float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2)) * 1.2f;
+    glViewport(vx, vy, vw, vh);
 
-        maxCellHeight = cellRenderObject.ranges.y > maxCellHeight ? cellRenderObject.ranges.y : maxCellHeight;
+    //_quadShader.bind();
+    //glBindVertexArray(quadVao);
+    //glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-        totalFramesWidth += maxWidth;
-    }
-    maxCellHeight *= 1.2f;
+    //glClear(GL_DEPTH_BUFFER_BIT);
+
+    float depthRange = _scene->getCortexStructure().getMaxDepth() - _scene->getCortexStructure().getMinDepth();
+
     _lineShader.bind();
 
-    float framesAspectRatio = totalFramesWidth / maxCellHeight;
-
-    float scalingFactor = 1;
-    if (framesAspectRatio > _aspectRatio)
-    {
-        scalingFactor = totalFramesWidth / _aspectRatio;
-    }
-    else
-        scalingFactor = maxCellHeight;
-
     _viewMatrix.setToIdentity();
-    _viewMatrix.scale(1.8 / scalingFactor);
-    
-    //float maxYExtent = 0;
+    _viewMatrix.scale(1.0f / depthRange);
+
     float xOffset = 0;
     for (int i = 0; i < _cellRenderObjects.size(); i++)
     {
@@ -58,7 +46,7 @@ void MorphologyLineRenderer::render(int index, float t)
         
         //qDebug() << "YOffset" << yOffset;
         _modelMatrix.setToIdentity();
-        _modelMatrix.translate(-totalFramesWidth /2 + maxWidth /2 + xOffset, 0, 0);
+        _modelMatrix.translate(maxWidth /2 + xOffset, depthRange + cellRenderObject.centroid.y, 0);
         _modelMatrix.rotate(t, 0, 1, 0);
         _modelMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
 
@@ -78,31 +66,9 @@ void MorphologyLineRenderer::render(int index, float t)
 
 void MorphologyLineRenderer::getCellMetadataLocations(std::vector<float>& locations)
 {
-    float totalFramesWidth = 0;
-    float maxCellHeight = 0;
+    float depthRange = _scene->getCortexStructure().getMaxDepth() - _scene->getCortexStructure().getMinDepth();
 
     locations.resize(_cellRenderObjects.size());
-
-    float yOffset = 0;
-    for (int i = 0; i < _cellRenderObjects.size(); i++)
-    {
-        CellRenderObject& cellRenderObject = _cellRenderObjects[i];
-        float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2)) * 1.2f;
-
-        maxCellHeight = cellRenderObject.ranges.y > maxCellHeight ? cellRenderObject.ranges.y : maxCellHeight;
-
-        totalFramesWidth += maxWidth;
-    }
-    maxCellHeight *= 1.2f;
-    float framesAspectRatio = totalFramesWidth / maxCellHeight;
-
-    float scalingFactor = 1;
-    if (framesAspectRatio > _aspectRatio)
-    {
-        scalingFactor = totalFramesWidth / _aspectRatio;
-    }
-    else
-        scalingFactor = maxCellHeight;
 
     float xOffset = 0;
     for (int i = 0; i < locations.size(); i++)
@@ -111,9 +77,9 @@ void MorphologyLineRenderer::getCellMetadataLocations(std::vector<float>& locati
         float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2)) * 1.2f;
 
         QMatrix4x4 viewMatrix;
-        viewMatrix.scale(1.8 / scalingFactor);
+        viewMatrix.scale(1.0f / depthRange);
         QMatrix4x4 modelMatrix;
-        modelMatrix.translate(-totalFramesWidth / 2 + maxWidth / 2 + xOffset, 0, 0);
+        modelMatrix.translate(maxWidth / 2 + xOffset, 0, 0);
         QVector4D v = _projMatrix * viewMatrix * modelMatrix * QVector4D(0, 0, 0, 1);
         locations[i] = (v.x() / v.w()) * 0.5f + 0.5f;
 

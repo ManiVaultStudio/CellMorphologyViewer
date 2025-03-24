@@ -18,7 +18,8 @@ MorphologyWidget::MorphologyWidget(CellMorphologyView* plugin, Scene* scene) :
     _renderMode(RenderMode::LINE),
     _scene(scene),
     _lineRenderer(scene),
-    _tubeRenderer(scene)
+    _tubeRenderer(scene),
+    _layerDrawing(this)
 {
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
@@ -36,6 +37,8 @@ MorphologyWidget::MorphologyWidget(CellMorphologyView* plugin, Scene* scene) :
     surfaceFormat.setSamples(64);
 
     setFormat(surfaceFormat);
+
+    setContentsMargins(0, 0, 0, 0);
 }
 
 MorphologyWidget::~MorphologyWidget()
@@ -57,10 +60,8 @@ void MorphologyWidget::uploadMorphologies()
     _lineRenderer.buildRenderObjects();
 }
 
-void MorphologyWidget::initializeGL()
+void MorphologyWidget::onWidgetInitialized()
 {
-    initializeOpenGLFunctions();
-
     _lineRenderer.init();
     _tubeRenderer.init();
 
@@ -72,13 +73,14 @@ void MorphologyWidget::initializeGL()
     isInitialized = true;
 }
 
-void MorphologyWidget::resizeGL(int w, int h)
+void MorphologyWidget::onWidgetResized(int w, int h)
 {
-    _lineRenderer.resize(w, h);
-    _tubeRenderer.resize(w, h);
+    float px = pixelRatio();
+    _lineRenderer.resize(w, h, 64 * px, 64 * px);
+    _tubeRenderer.resize(w, h, 64 * px, 64 * px);
 }
 
-void MorphologyWidget::paintGL()
+void MorphologyWidget::onWidgetRendered()
 {
     t += 0.3f;
 
@@ -96,32 +98,39 @@ void MorphologyWidget::paintGL()
     QPainter painter(this);
 
     int MARGIN = 64;
-    QPen midPen(QColor(80, 80, 80, 255), 3, Qt::DashLine, Qt::FlatCap, Qt::RoundJoin);
-    painter.setPen(midPen);
-    painter.drawLine(MARGIN, height() / 2, width() - MARGIN, height() / 2);
+    int chartWidth = width() - MARGIN * 2;
 
-    QPen leftAxis(QColor(80, 80, 80, 255), 2, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
-    painter.setPen(leftAxis);
-    painter.drawLine(MARGIN, MARGIN, MARGIN, height() - MARGIN);
+    _layerDrawing.setDepthRange(_scene->getCortexStructure().getMinDepth(), _scene->getCortexStructure().getMaxDepth());
+    _layerDrawing.drawAxes(painter, _scene);
 
     mv::Dataset<CellMorphologies> morphologyDataset = _scene->getMorphologyDataset();
+    const std::vector<CellMorphology>& morphologies = morphologyDataset->getData();
     mv::Dataset<Text> cellMetadata = _scene->getCellMetadataDataset();
+
     const auto& selectionIndices = morphologyDataset->getSelectionIndices();
+    std::vector<uint32_t> sortedSelectionIndices = selectionIndices;
+
+    // Reorder selection based on soma depth
+    std::sort(sortedSelectionIndices.begin(), sortedSelectionIndices.end(), [&morphologies](const uint32_t& a, const uint32_t& b)
+    {
+        return morphologies[a].centroid.y > morphologies[b].centroid.y;
+    });
+
     QStringList morphCellIds = morphologyDataset->getCellIdentifiers();
     std::vector<QString> cellIds = cellMetadata->getColumn("Cell ID");
 
-    if (cellMetadata->hasColumn("Subclass"))
+    if (cellMetadata->hasColumn("Cluster"))
     {
-        std::vector<QString> subclasses = cellMetadata->getColumn("Subclass");
+        std::vector<QString> clusters = cellMetadata->getColumn("Cluster");
 
         QFont font = painter.font();
         //font.setPointSizeF(font.pointSizeF() * 2);
         painter.setFont(font);
 
         painter.setPen(QPen(Qt::black, 1));
-        for (int i = 0; i < selectionIndices.size(); i++)
+        for (int i = 0; i < sortedSelectionIndices.size(); i++)
         {
-            int si = selectionIndices[i];
+            int si = sortedSelectionIndices[i];
             CellMorphology& morphology = morphologyDataset->getData()[si];
 
             QString morphCellId = morphCellIds[si];
@@ -129,7 +138,7 @@ void MorphologyWidget::paintGL()
             {
                 if (cellIds[ci] == morphCellId)
                 {
-                    painter.drawText(offset[i] * width() - 16, 16, clusters[ci]);
+                    painter.drawText(offset[i] * chartWidth - 16 + MARGIN, 16, clusters[ci]);
                 }
             }
         }
@@ -139,9 +148,9 @@ void MorphologyWidget::paintGL()
 
     switch (_renderMode)
     {
-        case RenderMode::LINE: _lineRenderer.render(0, t); break;
-        case RenderMode::REAL: _tubeRenderer.render(0, t); break;
-        default: _lineRenderer.render(0, t);
+    case RenderMode::LINE: _lineRenderer.render(0, t); break;
+    case RenderMode::REAL: _tubeRenderer.render(0, t); break;
+    default: _lineRenderer.render(0, t);
     }
 
     painter.endNativePainting();
@@ -149,7 +158,7 @@ void MorphologyWidget::paintGL()
     painter.end();
 }
 
-void MorphologyWidget::cleanup()
+void MorphologyWidget::onWidgetCleanup()
 {
 
 }

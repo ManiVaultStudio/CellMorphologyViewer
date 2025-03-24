@@ -34,13 +34,14 @@ class MorphologyRenderer : protected QOpenGLFunctions_3_3_Core
 public:
     MorphologyRenderer(Scene* scene) :
         _scene(scene),
-        _aspectRatio(1)
+        _aspectRatio(1),
+        quadVao(0)
     {
 
     }
 
     virtual void init() = 0;
-    void resize(int w, int h);
+    void resize(int w, int h, int xMargin, int yMargin);
     void update(float t);
 
     virtual void render(int index, float t) = 0;
@@ -61,7 +62,11 @@ protected:
     QMatrix4x4 _viewMatrix;
     QMatrix4x4 _modelMatrix;
 
+    int vx, vy, vw, vh;
+
     float _aspectRatio;
 
     std::vector<CellRenderObject> _cellRenderObjects;
+
+    unsigned int quadVao;
 };

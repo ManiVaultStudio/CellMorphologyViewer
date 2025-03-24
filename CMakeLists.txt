@@ -47,6 +47,8 @@ set(PLUGIN_SOURCES
     #src/Query.h
     #src/Query.cpp
     #src/ImageQuery.h
+    src/LayerDepthsReader.h
+    src/LayerDepthsReader.cpp
     src/CellMorphologyView.json
 )
 
@@ -59,6 +61,8 @@ set(RENDER_SOURCES
     src/MorphologyTubeRenderer.cpp
     #src/MorphologyLineSegments.h
     #src/MorphologyLineSegments.cpp
+    src/LayerDrawing.h
+    src/LayerDrawing.cpp
 )
 
 set(QRESOURCES

@@ -63,7 +63,7 @@ void MorphologyTubeRenderer::init()
 
     // Load shaders
     bool loaded = true;
-    loaded &= _shader.loadShaderFromFile(":shaders/Model.vert", ":shaders/Tubes.frag");
+    loaded &= _shader.loadShaderFromFile(":cell_morphology_view/shaders/Model.vert", ":cell_morphology_view/shaders/Tubes.frag");
 
     if (!loaded) {
         qCritical() << "Failed to load one of the morphology shaders";

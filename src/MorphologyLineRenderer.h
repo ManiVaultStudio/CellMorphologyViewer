@@ -35,6 +35,7 @@ private:
 
 private:
     mv::ShaderProgram _lineShader;
+    mv::ShaderProgram _quadShader;
 
     float _maxRowWidth; // Maximum width that can be filled by displayed cells, if exceeded, next cells are rendered below
 

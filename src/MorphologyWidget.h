@@ -2,12 +2,14 @@
 
 #include "Scene.h"
 
+#include "widgets/OpenGLWidget.h"
+
 #include "MorphologyLineRenderer.h"
 #include "MorphologyTubeRenderer.h"
 
-#include "graphics/Vector3f.h"
+#include "LayerDrawing.h"
 
-#include <QOpenGLWidget>
+#include "graphics/Vector3f.h"
 
 #include <vector>
 #include <unordered_map>
@@ -20,7 +22,7 @@ enum class RenderMode
     LINE, REAL
 };
 
-class MorphologyWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
+class MorphologyWidget : public mv::gui::OpenGLWidget
 {
     Q_OBJECT
 public:
@@ -36,10 +38,10 @@ public:
     void uploadMorphologies();
 
 protected:
-    void initializeGL()         Q_DECL_OVERRIDE;
-    void resizeGL(int w, int h) Q_DECL_OVERRIDE;
-    void paintGL()              Q_DECL_OVERRIDE;
-    void cleanup();
+    virtual void onWidgetInitialized() override;
+    virtual void onWidgetResized(int w, int h) override;
+    virtual void onWidgetRendered() override;
+    virtual void onWidgetCleanup() override;
 
     bool eventFilter(QObject* target, QEvent* event);
 
@@ -53,4 +55,6 @@ private:
     MorphologyLineRenderer _lineRenderer;
     MorphologyTubeRenderer _tubeRenderer;
     RenderMode _renderMode;
+
+    LayerDrawing _layerDrawing;
 };

@@ -2,14 +2,19 @@
 
 #include "CellMorphologyData/CellMorphology.h"
 
-void MorphologyRenderer::resize(int w, int h)
+void MorphologyRenderer::resize(int w, int h, int xMargin, int yMargin)
 {
-    glViewport(0, 0, w, h);
+    glViewport(xMargin, yMargin, w - xMargin, h - yMargin);
 
-    _aspectRatio = (float) w / h;
+    vx = xMargin; vy = yMargin; vw = w - xMargin * 2; vh = h - yMargin * 2;
+
+    int width = w - xMargin * 2;
+    int height = h - yMargin * 2;
+
+    _aspectRatio = (float)width / height;
 
     _projMatrix.setToIdentity();
-    _projMatrix.ortho(-_aspectRatio, _aspectRatio, -1, 1, -1, 1);
+    _projMatrix.ortho(0, _aspectRatio, 0, 1, -1, 1);
 }
 
 void MorphologyRenderer::update(float t)
@@ -35,16 +40,28 @@ void MorphologyRenderer::buildRenderObjects()
 
     mv::Dataset<CellMorphologies> morphologyDataset = _scene->getMorphologyDataset();
 
+    const std::vector<CellMorphology>& morphologies = morphologyDataset->getData();
     const auto& selectionIndices = morphologyDataset->getSelectionIndices();
+    std::vector<uint32_t> sortedSelectionIndices = selectionIndices;
 
-    _cellRenderObjects.resize(selectionIndices.size());
-    qDebug() << "Build render objects: " << selectionIndices.size();
-    for (int i = 0; i < selectionIndices.size(); i++)
+    // Reorder selection based on soma depth
+    std::sort(sortedSelectionIndices.begin(), sortedSelectionIndices.end(), [&morphologies](const uint32_t& a, const uint32_t& b)
     {
-        int si = selectionIndices[i];
+        return morphologies[a].centroid.y > morphologies[b].centroid.y;
+    });
+
+    _cellRenderObjects.resize(sortedSelectionIndices.size());
+    qDebug() << "Build render objects: " << sortedSelectionIndices.size();
+    for (int i = 0; i < sortedSelectionIndices.size(); i++)
+    {
+        int si = sortedSelectionIndices[i];
         CellMorphology& morphology = morphologyDataset->getData()[si];
 
         CellRenderObject& cellRenderObject = _cellRenderObjects[i];
         buildRenderObject(morphology, cellRenderObject);
     }
+
+    /////////////////////////////////////////////
+    // Region debug
+    glGenVertexArrays(1, &quadVao);
 }
