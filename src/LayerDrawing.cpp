@@ -27,26 +27,30 @@ void LayerDrawing::drawAxes(QPainter& painter, Scene* scene)
 
     const CortexStructure& cortexStructure = scene->getCortexStructure();
 
+    QPen axisPen(QColor(80, 80, 80, 255), 2, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
+    QPen midPen(QColor(80, 80, 80, 255), 1, Qt::DashLine, Qt::FlatCap, Qt::RoundJoin);
+
     //int lightness = 240;
-    for (int i = 0; i < cortexStructure._layerDepths.size() - 1; i++)
+    std::vector<int> lineHeights(cortexStructure._layerDepths.size() + 1);
+
+    for (int i = 0; i < cortexStructure._layerDepths.size(); i++)
     {
-        float layerDepthTop = cortexStructure.getLayerDepth(i);
-        float layerDepthBottom = cortexStructure.getLayerDepth(i+1);
+        float layerDepth = cortexStructure.getLayerDepth(i);
 
-        int topY = (layerDepthTop / _depthRange) * chartHeight + MARGIN;
-        int bottomY = (layerDepthBottom / _depthRange) * chartHeight + MARGIN;
+        int lineY = (layerDepth / _depthRange) * chartHeight + MARGIN;
 
-        QPen midPen(QColor(80, 80, 80, 255), 1, Qt::DashLine, Qt::FlatCap, Qt::RoundJoin);
-        painter.setPen(midPen);
-        drawHorizontalLine(painter, topY);
-        drawHorizontalLine(painter, bottomY);
+        if (i == 0 || i == cortexStructure._layerDepths.size() - 1)
+            painter.setPen(axisPen);
+        else
+            painter.setPen(midPen);
+
+        drawHorizontalLine(painter, lineY);
 
         //painter.fillRect(MARGIN, topY, chartWidth, abs(topY - bottomY), QColor::fromHsl(0, 0, lightness));
         //lightness -= 2;
     }
-
-    QPen leftAxis(QColor(80, 80, 80, 255), 2, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
-    painter.setPen(leftAxis);
+    
+    painter.setPen(axisPen);
     painter.drawLine(MARGIN, MARGIN, MARGIN, _parent->height() - MARGIN);
 }
 
