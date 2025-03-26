@@ -26,7 +26,8 @@ public:
 
     mv::Vector3f ranges;
     float maxExtent = 0;
-    mv::Vector3f centroid;
+    mv::Vector3f somaPosition;
+    mv::Vector3f cellTypeColor;
 };
 
 class MorphologyRenderer : protected QOpenGLFunctions_3_3_Core

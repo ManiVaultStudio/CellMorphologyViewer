@@ -47,7 +47,7 @@ void MorphologyRenderer::buildRenderObjects()
     // Reorder selection based on soma depth
     std::sort(sortedSelectionIndices.begin(), sortedSelectionIndices.end(), [&morphologies](const uint32_t& a, const uint32_t& b)
     {
-        return morphologies[a].centroid.y > morphologies[b].centroid.y;
+        return morphologies[a].somaPosition.y > morphologies[b].somaPosition.y;
     });
 
     _cellRenderObjects.resize(sortedSelectionIndices.size());

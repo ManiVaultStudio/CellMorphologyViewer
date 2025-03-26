@@ -77,14 +77,14 @@ void MorphologyTubeRenderer::render(int index, float t)
     CellRenderObject& cellRenderObject = _cellRenderObjects[index];
 
     _projMatrix.setToIdentity();
-    mv::Vector3f centroid = _morphologyView.centroid;
+    mv::Vector3f somaPosition = _morphologyView.somaPosition;
     float maxExtent = _morphologyView.maxExtent / 1.5f;
 
     _projMatrix.ortho(-maxExtent * _aspectRatio, maxExtent * _aspectRatio, -maxExtent, maxExtent, -maxExtent, maxExtent);
 
     _viewMatrix.setToIdentity();
     _viewMatrix.rotate(t, 0, 1, 0);
-    _viewMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
+    _viewMatrix.translate(-somaPosition.x, -somaPosition.y, -somaPosition.z);
 
     _shader.bind();
     _shader.uniformMatrix4f("projMatrix", _projMatrix.constData());
@@ -279,7 +279,7 @@ void MorphologyTubeRenderer::buildRenderObject(const CellMorphology& cellMorphol
     cellRenderObject.numVertices = (int) allTubeVertices.size();
     qDebug() << ">>>>>>>>>>>>>>>>>>>>> Num vertices: " << cellRenderObject.numVertices;
 
-    cellRenderObject.centroid = somaPosition;
+    cellRenderObject.somaPosition = somaPosition;
     mv::Vector3f range = cellMorphology.maxRange - cellMorphology.minRange;
     float maxExtent = std::max(std::max(range.x, range.y), range.z);
     cellRenderObject.maxExtent = maxExtent;

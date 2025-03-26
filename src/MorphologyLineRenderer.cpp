@@ -40,19 +40,21 @@ void MorphologyLineRenderer::render(int index, float t)
     {
         CellRenderObject& cellRenderObject = _cellRenderObjects[i];
 
-        mv::Vector3f centroid = cellRenderObject.centroid;
+        mv::Vector3f somaPosition = cellRenderObject.somaPosition;
 
         float maxWidth = sqrtf(powf(cellRenderObject.ranges.x, 2) + powf(cellRenderObject.ranges.z, 2)) * 1.2f;
         
         //qDebug() << "YOffset" << yOffset;
         _modelMatrix.setToIdentity();
-        _modelMatrix.translate(maxWidth /2 + xOffset, depthRange + cellRenderObject.centroid.y, 0);
+        _modelMatrix.translate(maxWidth /2 + xOffset, depthRange + cellRenderObject.somaPosition.y, 0);
         _modelMatrix.rotate(t, 0, 1, 0);
-        _modelMatrix.translate(-centroid.x, -centroid.y, -centroid.z);
+        _modelMatrix.translate(-somaPosition.x, -somaPosition.y, -somaPosition.z);
 
         _lineShader.uniformMatrix4f("projMatrix", _projMatrix.constData());
         _lineShader.uniformMatrix4f("viewMatrix", _viewMatrix.constData());
         _lineShader.uniformMatrix4f("modelMatrix", _modelMatrix.constData());
+
+        _lineShader.uniform3f("cellTypeColor", cellRenderObject.cellTypeColor);
 
         glBindVertexArray(cellRenderObject.vao);
         glDrawArrays(GL_LINES, 0, cellRenderObject.numVertices);
@@ -166,11 +168,12 @@ void MorphologyLineRenderer::buildRenderObject(const CellMorphology& cellMorphol
 
     cellRenderObject.numVertices = (int) lineSegments.segments.size();
 
-    cellRenderObject.centroid = somaPosition;
+    cellRenderObject.somaPosition = somaPosition;
     mv::Vector3f range = cellMorphology.maxRange - cellMorphology.minRange;
     float maxExtent = std::max(std::max(range.x, range.y), range.z);
     cellRenderObject.ranges = range;
     cellRenderObject.maxExtent = maxExtent;
+    cellRenderObject.cellTypeColor = cellMorphology.cellTypeColor;
 
     _morphologyView = cellRenderObject;
 }

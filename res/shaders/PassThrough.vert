@@ -4,6 +4,8 @@ uniform mat4 projMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
+uniform vec3 cellTypeColor;
+
 layout(location = 0) in vec3 position;
 layout(location = 1) in float radius;
 layout(location = 2) in int type;
@@ -25,17 +27,17 @@ void main()
     // Axon
     else if (type == 2)
     {
-        color = vec3(0, 60/255.0, 125/255.0);
+        color = vec3(0.8, 0.8, 0.8);
     }
     // Basal dendrite
     else if (type == 3)
     {
-        color = vec3(0.84, 0.54, 0.21);
+        color = vec3(0.5, 0.5, 0.5);
     }
     // Apical dendrite
     else if (type == 4)
     {
-        color = vec3(0.706, 0.22, 0.38);
+        color = cellTypeColor;
     }
 
     pass_color = color;
