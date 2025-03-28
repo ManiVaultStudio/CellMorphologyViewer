@@ -103,6 +103,10 @@ class CellMorphologyViewerConan(ConanFile):
         manivault_dir = pathlib.Path(mv_core_root, "cmake", "mv").as_posix()
         print("ManiVault_DIR: ", manivault_dir)
         tc.variables["ManiVault_DIR"] = manivault_dir
+        
+        # Give the installation directory to CMake
+        MV_CMD_PATH = pathlib.Path(self.deps_cpp_info["CellMorphologyData"].rootpath).as_posix()
+        tc.variables["MV_CMD_INSTALL_DIR"] = MV_CMD_PATH
 
         # Set some build options
         tc.variables["MV_UNITY_BUILD"] = "ON"
@@ -111,7 +115,7 @@ class CellMorphologyViewerConan(ConanFile):
 
     def _configure_cmake(self):
         cmake = CMake(self)
-        cmake.configure(build_script_folder="hdps/Scatterplot")
+        cmake.configure(build_script_folder="hdps/CellMorphologyViewer")
         cmake.verbose = True
         return cmake
 
