@@ -75,7 +75,7 @@ void MorphologyWidget::onWidgetInitialized()
 
 void MorphologyWidget::onWidgetResized(int w, int h)
 {
-    float px = pixelRatio();
+    float px = devicePixelRatio();
     _lineRenderer.resize(w, h, 64 * px, 64 * px);
     _tubeRenderer.resize(w, h, 64 * px, 64 * px);
 }
