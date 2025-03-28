@@ -32,7 +32,7 @@ class CellMorphologyViewerConan(ConanFile):
     default_options = {"shared": True, "fPIC": True}
 
     # Data plugin dependencies
-    requires = ("CellMorphologyData/1.0@lkeb/stable")
+    requires = ("CellMorphologyData/1.1@lkeb/stable")
 
     # Qt requirement is inherited from hdps-core
 
